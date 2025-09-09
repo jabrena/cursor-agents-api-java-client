@@ -2,9 +2,11 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    # Run on all branches
   pull_request:
-    branches: [ main, develop ]
+    # Run on PRs to any branch
+  workflow_dispatch:
+    # Allow manual triggering
 
 jobs:
   test:
@@ -95,7 +97,9 @@ jobs:
         echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Java Versions Tested:** 17, 21" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workflow:** Runs on ALL branches (feature, bugfix, hotfix, main, develop)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Project Structure" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ OpenAPI YAML specification in \`src/main/resources/\`" >> $GITHUB_STEP_SUMMARY
