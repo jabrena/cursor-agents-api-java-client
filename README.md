@@ -15,7 +15,6 @@ The Cursor Background Agents API allows you to programmatically manage AI-powere
 ## 📁 Files
 
 - **`cursor-api-openapi.yaml`** - OpenAPI specification in YAML format
-- **`cursor-api-openapi.json`** - OpenAPI specification in JSON format
 - **`README.md`** - This documentation file
 
 ## 🚀 API Endpoints
@@ -67,7 +66,7 @@ openapi-generator-cli generate -i cursor-api-openapi.yaml -g go -o ./go-client
 ### 3. API Testing
 Use tools like [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/) to import the OpenAPI spec and test the API:
 
-1. Import the `cursor-api-openapi.yaml` or `cursor-api-openapi.json` file
+1. Import the `cursor-api-openapi.yaml` file
 2. Configure authentication with your Cursor API token
 3. Test the endpoints directly from the interface
 
@@ -196,8 +195,7 @@ This OpenAPI specification was created by analyzing the official Cursor document
 To update this specification:
 
 1. Modify the `cursor-api-openapi.yaml` file
-2. Regenerate the JSON version: `python3 -c "import yaml, json; json.dump(yaml.safe_load(open('cursor-api-openapi.yaml')), open('cursor-api-openapi.json', 'w'), indent=2)"`
-3. Validate the changes: `python3 -c "import yaml; yaml.safe_load(open('cursor-api-openapi.yaml'))"`
+2. Validate the changes: `python3 -c "import yaml; yaml.safe_load(open('cursor-api-openapi.yaml'))"`
 
 ## 📄 License
 
