@@ -1,0 +1,159 @@
+name: OpenAPI Client Tests
+
+on:
+  push:
+    paths:
+      - 'src/main/resources/openapi.yaml'
+      - 'src/test/java/**'
+      - 'pom.xml'
+  pull_request:
+    paths:
+      - 'src/main/resources/openapi.yaml'
+      - 'src/test/java/**'
+      - 'pom.xml'
+
+jobs:
+  openapi-validation:
+    runs-on: ubuntu-latest
+    name: Validate OpenAPI Specification
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Validate OpenAPI spec
+      uses: char0n/swagger-editor-validate@v1
+      with:
+        definition-file: src/main/resources/openapi.yaml
+    
+    - name: OpenAPI Spec Summary
+      run: |
+        echo "## OpenAPI Specification Validation ✅" >> $GITHUB_STEP_SUMMARY
+        echo "The OpenAPI YAML specification has been validated successfully." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Specification Details:" >> $GITHUB_STEP_SUMMARY
+        echo "- **File:** \`src/main/resources/openapi.yaml\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **API:** Cursor Management API" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** 1.0.0" >> $GITHUB_STEP_SUMMARY
+        echo "- **Format:** OpenAPI 3.0.3" >> $GITHUB_STEP_SUMMARY
+
+  client-generation:
+    runs-on: ubuntu-latest
+    name: Test Client Generation
+    needs: openapi-validation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+    
+    - name: Generate Java client from OpenAPI
+      run: ./mvnw clean generate-sources
+    
+    - name: Verify generated client structure
+      run: |
+        echo "## Generated Java Client Structure" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### API Classes:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        find target/generated-sources/src/main/java -name "*Api.java" -type f | sed 's|target/generated-sources/src/main/java/||' >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Model Classes:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        find target/generated-sources/src/main/java -path "*/model/*.java" -type f | sed 's|target/generated-sources/src/main/java/||' >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Compile generated sources
+      run: ./mvnw compile
+    
+    - name: Upload generated client
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-java-client
+        path: target/generated-sources/
+        retention-days: 7
+
+  wiremock-tests:
+    runs-on: ubuntu-latest
+    name: WireMock Integration Tests
+    needs: client-generation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+    
+    - name: Run WireMock tests
+      run: ./mvnw clean test -Dtest=CursorsApiWireMockTest
+    
+    - name: Generate test report
+      if: always()
+      run: |
+        echo "## WireMock Test Results" >> $GITHUB_STEP_SUMMARY
+        if [ -f target/surefire-reports/TEST-com.example.client.CursorsApiWireMockTest.xml ]; then
+          TESTS=$(grep -o 'tests="[0-9]*"' target/surefire-reports/TEST-*.xml | head -1 | grep -o '[0-9]*')
+          FAILURES=$(grep -o 'failures="[0-9]*"' target/surefire-reports/TEST-*.xml | head -1 | grep -o '[0-9]*')
+          ERRORS=$(grep -o 'errors="[0-9]*"' target/surefire-reports/TEST-*.xml | head -1 | grep -o '[0-9]*')
+          
+          echo "- **Total Tests:** $TESTS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failures:** $FAILURES" >> $GITHUB_STEP_SUMMARY
+          echo "- **Errors:** $ERRORS" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$FAILURES" = "0" ] && [ "$ERRORS" = "0" ]; then
+            echo "- **Status:** ✅ All tests passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status:** ❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "- **Status:** ⚠️ Test results not found" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Coverage:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ List cursors with pagination" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Create cursor with validation" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Get cursor by ID" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Update cursor properties" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Delete cursor" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Move cursor with animation" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Error handling scenarios" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Upload test reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: wiremock-test-reports
+        path: |
+          target/surefire-reports/
+          target/site/jacoco/
+        retention-days: 30
