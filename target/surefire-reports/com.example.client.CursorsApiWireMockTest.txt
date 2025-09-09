@@ -1,0 +1,145 @@
+-------------------------------------------------------------------------------
+Test set: com.example.client.CursorsApiWireMockTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 5, Skipped: 0, Time elapsed: 0.974 s <<< FAILURE! -- in com.example.client.CursorsApiWireMockTest
+com.example.client.CursorsApiWireMockTest.testMoveCursor_Success -- Time elapsed: 0.015 s <<< ERROR!
+com.google.gson.JsonIOException: Failed making field 'java.time.OffsetDateTime#dateTime' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:38)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:286)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.Gson.toJson(Gson.java:834)
+	at com.google.gson.Gson.toJson(Gson.java:812)
+	at com.google.gson.Gson.toJson(Gson.java:759)
+	at com.google.gson.Gson.toJson(Gson.java:736)
+	at com.example.client.CursorsApiWireMockTest.testMoveCursor_Success(CursorsApiWireMockTest.java:341)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.time.LocalDateTime java.time.OffsetDateTime.dateTime accessible: module java.base does not "opens java.time" to unnamed module @3aeaafa6
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(AccessibleObject.java:391)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:367)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:315)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:183)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:177)
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:35)
+	... 15 more
+
+com.example.client.CursorsApiWireMockTest.testListCursors_Success -- Time elapsed: 0.014 s <<< ERROR!
+com.google.gson.JsonIOException: Failed making field 'java.time.OffsetDateTime#dateTime' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:38)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:286)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.CollectionTypeAdapterFactory.create(CollectionTypeAdapterFactory.java:53)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.Gson.toJson(Gson.java:834)
+	at com.google.gson.Gson.toJson(Gson.java:812)
+	at com.google.gson.Gson.toJson(Gson.java:759)
+	at com.google.gson.Gson.toJson(Gson.java:736)
+	at com.example.client.CursorsApiWireMockTest.testListCursors_Success(CursorsApiWireMockTest.java:64)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.time.LocalDateTime java.time.OffsetDateTime.dateTime accessible: module java.base does not "opens java.time" to unnamed module @3aeaafa6
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(AccessibleObject.java:391)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:367)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:315)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:183)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:177)
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:35)
+	... 21 more
+
+com.example.client.CursorsApiWireMockTest.testUpdateCursor_Success -- Time elapsed: 0.009 s <<< ERROR!
+com.google.gson.JsonIOException: Failed making field 'java.time.OffsetDateTime#dateTime' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:38)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:286)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.Gson.toJson(Gson.java:834)
+	at com.google.gson.Gson.toJson(Gson.java:812)
+	at com.google.gson.Gson.toJson(Gson.java:759)
+	at com.google.gson.Gson.toJson(Gson.java:736)
+	at com.example.client.CursorsApiWireMockTest.testUpdateCursor_Success(CursorsApiWireMockTest.java:263)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.time.LocalDateTime java.time.OffsetDateTime.dateTime accessible: module java.base does not "opens java.time" to unnamed module @3aeaafa6
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(AccessibleObject.java:391)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:367)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:315)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:183)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:177)
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:35)
+	... 15 more
+
+com.example.client.CursorsApiWireMockTest.testGetCursorById_Success -- Time elapsed: 0.013 s <<< ERROR!
+com.google.gson.JsonIOException: Failed making field 'java.time.OffsetDateTime#dateTime' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:38)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:286)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.Gson.toJson(Gson.java:834)
+	at com.google.gson.Gson.toJson(Gson.java:812)
+	at com.google.gson.Gson.toJson(Gson.java:759)
+	at com.google.gson.Gson.toJson(Gson.java:736)
+	at com.example.client.CursorsApiWireMockTest.testGetCursorById_Success(CursorsApiWireMockTest.java:204)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.time.LocalDateTime java.time.OffsetDateTime.dateTime accessible: module java.base does not "opens java.time" to unnamed module @3aeaafa6
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(AccessibleObject.java:391)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:367)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:315)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:183)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:177)
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:35)
+	... 15 more
+
+com.example.client.CursorsApiWireMockTest.testCreateCursor_Success -- Time elapsed: 0.011 s <<< ERROR!
+com.google.gson.JsonIOException: Failed making field 'java.time.OffsetDateTime#dateTime' accessible; either increase its visibility or write a custom TypeAdapter for its declaring type.
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:38)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:286)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.createBoundField(ReflectiveTypeAdapterFactory.java:160)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.getBoundFields(ReflectiveTypeAdapterFactory.java:294)
+	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.create(ReflectiveTypeAdapterFactory.java:130)
+	at com.google.gson.Gson.getAdapter(Gson.java:556)
+	at com.google.gson.Gson.toJson(Gson.java:834)
+	at com.google.gson.Gson.toJson(Gson.java:812)
+	at com.google.gson.Gson.toJson(Gson.java:759)
+	at com.google.gson.Gson.toJson(Gson.java:736)
+	at com.example.client.CursorsApiWireMockTest.testCreateCursor_Success(CursorsApiWireMockTest.java:142)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.time.LocalDateTime java.time.OffsetDateTime.dateTime accessible: module java.base does not "opens java.time" to unnamed module @3aeaafa6
+	at java.base/java.lang.reflect.AccessibleObject.throwInaccessibleObjectException(AccessibleObject.java:391)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:367)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:315)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:183)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:177)
+	at com.google.gson.internal.reflect.ReflectionHelper.makeAccessible(ReflectionHelper.java:35)
+	... 15 more
+

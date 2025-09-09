@@ -36,9 +36,12 @@ public class CursorsApiWireMockTest {
         // Configure WireMock
         WireMock.configureFor("localhost", 8080);
         
-        // Create Gson for JSON serialization
+        // Create Gson for JSON serialization with OffsetDateTime support
         gson = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+            .registerTypeAdapter(OffsetDateTime.class, (JsonSerializer<OffsetDateTime>) (src, typeOfSrc, context) -> 
+                new JsonPrimitive(src.toString()))
+            .registerTypeAdapter(OffsetDateTime.class, (JsonDeserializer<OffsetDateTime>) (json, typeOfT, context) -> 
+                OffsetDateTime.parse(json.getAsString()))
             .create();
         
         // Create API client pointing to WireMock server
