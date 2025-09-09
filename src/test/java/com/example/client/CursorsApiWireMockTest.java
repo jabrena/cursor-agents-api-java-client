@@ -42,7 +42,7 @@ public class CursorsApiWireMockTest {
         
         // Create API client pointing to WireMock server
         ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath("http://localhost:8080");
+        apiClient.updateBaseUri("http://localhost:8080");
         cursorsApi = new CursorsApi(apiClient);
     }
 
