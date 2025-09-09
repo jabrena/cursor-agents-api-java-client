@@ -10,22 +10,12 @@
  * Do not edit the class manually.
  */
 
-
 package com.example.client.api;
 
-import com.example.client.ApiCallback;
 import com.example.client.ApiClient;
 import com.example.client.ApiException;
 import com.example.client.ApiResponse;
-import com.example.client.Configuration;
 import com.example.client.Pair;
-import com.example.client.ProgressRequestBody;
-import com.example.client.ProgressResponseBody;
-
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-
 
 import com.example.client.model.CreateCursorRequest;
 import com.example.client.model.Cursor;
@@ -34,831 +24,544 @@ import com.example.client.model.ErrorResponse;
 import com.example.client.model.MoveCursorRequest;
 import com.example.client.model.UpdateCursorRequest;
 
-import java.lang.reflect.Type;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.http.HttpRequest;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.StringJoiner;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class CursorsApi {
-    private ApiClient localVarApiClient;
-    private int localHostIndex;
-    private String localCustomBaseUrl;
+  private final HttpClient memberVarHttpClient;
+  private final ObjectMapper memberVarObjectMapper;
+  private final String memberVarBaseUri;
+  private final Consumer<HttpRequest.Builder> memberVarInterceptor;
+  private final Duration memberVarReadTimeout;
+  private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
+  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-    public CursorsApi() {
-        this(Configuration.getDefaultApiClient());
+  public CursorsApi() {
+    this(new ApiClient());
+  }
+
+  public CursorsApi(ApiClient apiClient) {
+    memberVarHttpClient = apiClient.getHttpClient();
+    memberVarObjectMapper = apiClient.getObjectMapper();
+    memberVarBaseUri = apiClient.getBaseUri();
+    memberVarInterceptor = apiClient.getRequestInterceptor();
+    memberVarReadTimeout = apiClient.getReadTimeout();
+    memberVarResponseInterceptor = apiClient.getResponseInterceptor();
+    memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
+  }
+
+  protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
+    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    String message = formatExceptionMessage(operationId, response.statusCode(), body);
+    return new ApiException(response.statusCode(), message, response.headers(), body);
+  }
+
+  private String formatExceptionMessage(String operationId, int statusCode, String body) {
+    if (body == null || body.isEmpty()) {
+      body = "[no body]";
     }
+    return operationId + " call failed with: " + statusCode + " - " + body;
+  }
 
-    public CursorsApi(ApiClient apiClient) {
-        this.localVarApiClient = apiClient;
-    }
+  /**
+   * Create a new cursor
+   * Create a new cursor with specified properties
+   * @param createCursorRequest  (required)
+   * @return Cursor
+   * @throws ApiException if fails to make API call
+   */
+  public Cursor createCursor(CreateCursorRequest createCursorRequest) throws ApiException {
+    ApiResponse<Cursor> localVarResponse = createCursorWithHttpInfo(createCursorRequest);
+    return localVarResponse.getData();
+  }
 
-    public ApiClient getApiClient() {
-        return localVarApiClient;
-    }
-
-    public void setApiClient(ApiClient apiClient) {
-        this.localVarApiClient = apiClient;
-    }
-
-    public int getHostIndex() {
-        return localHostIndex;
-    }
-
-    public void setHostIndex(int hostIndex) {
-        this.localHostIndex = hostIndex;
-    }
-
-    public String getCustomBaseUrl() {
-        return localCustomBaseUrl;
-    }
-
-    public void setCustomBaseUrl(String customBaseUrl) {
-        this.localCustomBaseUrl = customBaseUrl;
-    }
-
-    /**
-     * Build call for createCursor
-     * @param createCursorRequest  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Cursor created successfully </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call createCursorCall(CreateCursorRequest createCursorRequest, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
+  /**
+   * Create a new cursor
+   * Create a new cursor with specified properties
+   * @param createCursorRequest  (required)
+   * @return ApiResponse&lt;Cursor&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Cursor> createCursorWithHttpInfo(CreateCursorRequest createCursorRequest) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createCursorRequestBuilder(createCursorRequest);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("createCursor", localVarResponse);
         }
+        return new ApiResponse<Cursor>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Cursor>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        Object localVarPostBody = createCursorRequest;
+  private HttpRequest.Builder createCursorRequestBuilder(CreateCursorRequest createCursorRequest) throws ApiException {
+    // verify the required parameter 'createCursorRequest' is set
+    if (createCursorRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'createCursorRequest' when calling createCursor");
+    }
 
-        // create path and map variables
-        String localVarPath = "/cursors";
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+    String localVarPath = "/cursors";
 
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(createCursorRequest);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Delete cursor
+   * Delete a cursor by its unique identifier
+   * @param cursorId Unique identifier of the cursor (required)
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteCursor(String cursorId) throws ApiException {
+    deleteCursorWithHttpInfo(cursorId);
+  }
+
+  /**
+   * Delete cursor
+   * Delete a cursor by its unique identifier
+   * @param cursorId Unique identifier of the cursor (required)
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteCursorWithHttpInfo(String cursorId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteCursorRequestBuilder(cursorId);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("deleteCursor", localVarResponse);
         }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
+        return new ApiResponse<Void>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          null
+        );
+      } finally {
+        // Drain the InputStream
+        while (localVarResponse.body().read() != -1) {
+            // Ignore
         }
+        localVarResponse.body().close();
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+  private HttpRequest.Builder deleteCursorRequestBuilder(String cursorId) throws ApiException {
+    // verify the required parameter 'cursorId' is set
+    if (cursorId == null) {
+      throw new ApiException(400, "Missing the required parameter 'cursorId' when calling deleteCursor");
     }
 
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call createCursorValidateBeforeCall(CreateCursorRequest createCursorRequest, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'createCursorRequest' is set
-        if (createCursorRequest == null) {
-            throw new ApiException("Missing the required parameter 'createCursorRequest' when calling createCursor(Async)");
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/cursors/{cursorId}"
+        .replace("{cursorId}", ApiClient.urlEncode(cursorId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Get cursor by ID
+   * Retrieve a specific cursor by its unique identifier
+   * @param cursorId Unique identifier of the cursor (required)
+   * @return Cursor
+   * @throws ApiException if fails to make API call
+   */
+  public Cursor getCursorById(String cursorId) throws ApiException {
+    ApiResponse<Cursor> localVarResponse = getCursorByIdWithHttpInfo(cursorId);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Get cursor by ID
+   * Retrieve a specific cursor by its unique identifier
+   * @param cursorId Unique identifier of the cursor (required)
+   * @return ApiResponse&lt;Cursor&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Cursor> getCursorByIdWithHttpInfo(String cursorId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getCursorByIdRequestBuilder(cursorId);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getCursorById", localVarResponse);
         }
+        return new ApiResponse<Cursor>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Cursor>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        return createCursorCall(createCursorRequest, _callback);
-
+  private HttpRequest.Builder getCursorByIdRequestBuilder(String cursorId) throws ApiException {
+    // verify the required parameter 'cursorId' is set
+    if (cursorId == null) {
+      throw new ApiException(400, "Missing the required parameter 'cursorId' when calling getCursorById");
     }
 
-    /**
-     * Create a new cursor
-     * Create a new cursor with specified properties
-     * @param createCursorRequest  (required)
-     * @return Cursor
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Cursor created successfully </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public Cursor createCursor(CreateCursorRequest createCursorRequest) throws ApiException {
-        ApiResponse<Cursor> localVarResp = createCursorWithHttpInfo(createCursorRequest);
-        return localVarResp.getData();
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/cursors/{cursorId}"
+        .replace("{cursorId}", ApiClient.urlEncode(cursorId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
-
-    /**
-     * Create a new cursor
-     * Create a new cursor with specified properties
-     * @param createCursorRequest  (required)
-     * @return ApiResponse&lt;Cursor&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Cursor created successfully </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Cursor> createCursorWithHttpInfo(CreateCursorRequest createCursorRequest) throws ApiException {
-        okhttp3.Call localVarCall = createCursorValidateBeforeCall(createCursorRequest, null);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
     }
+    return localVarRequestBuilder;
+  }
+  /**
+   * List all cursors
+   * Retrieve a list of all available cursors
+   * @param page Page number for pagination (optional, default to 1)
+   * @param limit Number of items per page (optional, default to 10)
+   * @return CursorListResponse
+   * @throws ApiException if fails to make API call
+   */
+  public CursorListResponse listCursors(Integer page, Integer limit) throws ApiException {
+    ApiResponse<CursorListResponse> localVarResponse = listCursorsWithHttpInfo(page, limit);
+    return localVarResponse.getData();
+  }
 
-    /**
-     * Create a new cursor (asynchronously)
-     * Create a new cursor with specified properties
-     * @param createCursorRequest  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Cursor created successfully </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call createCursorAsync(CreateCursorRequest createCursorRequest, final ApiCallback<Cursor> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = createCursorValidateBeforeCall(createCursorRequest, _callback);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for deleteCursor
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 204 </td><td> Cursor deleted successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call deleteCursorCall(String cursorId, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
+  /**
+   * List all cursors
+   * Retrieve a list of all available cursors
+   * @param page Page number for pagination (optional, default to 1)
+   * @param limit Number of items per page (optional, default to 10)
+   * @return ApiResponse&lt;CursorListResponse&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<CursorListResponse> listCursorsWithHttpInfo(Integer page, Integer limit) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = listCursorsRequestBuilder(page, limit);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("listCursors", localVarResponse);
         }
+        return new ApiResponse<CursorListResponse>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<CursorListResponse>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        Object localVarPostBody = null;
+  private HttpRequest.Builder listCursorsRequestBuilder(Integer page, Integer limit) throws ApiException {
 
-        // create path and map variables
-        String localVarPath = "/cursors/{cursorId}"
-            .replace("{" + "cursorId" + "}", localVarApiClient.escapeString(cursorId.toString()));
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+    String localVarPath = "/cursors";
 
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "page";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("page", page));
+    localVarQueryParameterBaseName = "limit";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("limit", limit));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Move cursor
+   * Move a cursor to a new position
+   * @param cursorId Unique identifier of the cursor (required)
+   * @param moveCursorRequest  (required)
+   * @return Cursor
+   * @throws ApiException if fails to make API call
+   */
+  public Cursor moveCursor(String cursorId, MoveCursorRequest moveCursorRequest) throws ApiException {
+    ApiResponse<Cursor> localVarResponse = moveCursorWithHttpInfo(cursorId, moveCursorRequest);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Move cursor
+   * Move a cursor to a new position
+   * @param cursorId Unique identifier of the cursor (required)
+   * @param moveCursorRequest  (required)
+   * @return ApiResponse&lt;Cursor&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Cursor> moveCursorWithHttpInfo(String cursorId, MoveCursorRequest moveCursorRequest) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = moveCursorRequestBuilder(cursorId, moveCursorRequest);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("moveCursor", localVarResponse);
         }
+        return new ApiResponse<Cursor>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Cursor>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
+  private HttpRequest.Builder moveCursorRequestBuilder(String cursorId, MoveCursorRequest moveCursorRequest) throws ApiException {
+    // verify the required parameter 'cursorId' is set
+    if (cursorId == null) {
+      throw new ApiException(400, "Missing the required parameter 'cursorId' when calling moveCursor");
+    }
+    // verify the required parameter 'moveCursorRequest' is set
+    if (moveCursorRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'moveCursorRequest' when calling moveCursor");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/cursors/{cursorId}/move"
+        .replace("{cursorId}", ApiClient.urlEncode(cursorId.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(moveCursorRequest);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Update cursor
+   * Update an existing cursor with new properties
+   * @param cursorId Unique identifier of the cursor (required)
+   * @param updateCursorRequest  (required)
+   * @return Cursor
+   * @throws ApiException if fails to make API call
+   */
+  public Cursor updateCursor(String cursorId, UpdateCursorRequest updateCursorRequest) throws ApiException {
+    ApiResponse<Cursor> localVarResponse = updateCursorWithHttpInfo(cursorId, updateCursorRequest);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Update cursor
+   * Update an existing cursor with new properties
+   * @param cursorId Unique identifier of the cursor (required)
+   * @param updateCursorRequest  (required)
+   * @return ApiResponse&lt;Cursor&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Cursor> updateCursorWithHttpInfo(String cursorId, UpdateCursorRequest updateCursorRequest) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = updateCursorRequestBuilder(cursorId, updateCursorRequest);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("updateCursor", localVarResponse);
         }
+        return new ApiResponse<Cursor>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Cursor>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
 
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+  private HttpRequest.Builder updateCursorRequestBuilder(String cursorId, UpdateCursorRequest updateCursorRequest) throws ApiException {
+    // verify the required parameter 'cursorId' is set
+    if (cursorId == null) {
+      throw new ApiException(400, "Missing the required parameter 'cursorId' when calling updateCursor");
+    }
+    // verify the required parameter 'updateCursorRequest' is set
+    if (updateCursorRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'updateCursorRequest' when calling updateCursor");
     }
 
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call deleteCursorValidateBeforeCall(String cursorId, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'cursorId' is set
-        if (cursorId == null) {
-            throw new ApiException("Missing the required parameter 'cursorId' when calling deleteCursor(Async)");
-        }
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-        return deleteCursorCall(cursorId, _callback);
+    String localVarPath = "/cursors/{cursorId}"
+        .replace("{cursorId}", ApiClient.urlEncode(cursorId.toString()));
 
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(updateCursorRequest);
+      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
     }
-
-    /**
-     * Delete cursor
-     * Delete a cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 204 </td><td> Cursor deleted successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public void deleteCursor(String cursorId) throws ApiException {
-        deleteCursorWithHttpInfo(cursorId);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
-
-    /**
-     * Delete cursor
-     * Delete a cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 204 </td><td> Cursor deleted successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> deleteCursorWithHttpInfo(String cursorId) throws ApiException {
-        okhttp3.Call localVarCall = deleteCursorValidateBeforeCall(cursorId, null);
-        return localVarApiClient.execute(localVarCall);
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
     }
-
-    /**
-     * Delete cursor (asynchronously)
-     * Delete a cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 204 </td><td> Cursor deleted successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call deleteCursorAsync(String cursorId, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = deleteCursorValidateBeforeCall(cursorId, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for getCursorById
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call getCursorByIdCall(String cursorId, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/cursors/{cursorId}"
-            .replace("{" + "cursorId" + "}", localVarApiClient.escapeString(cursorId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call getCursorByIdValidateBeforeCall(String cursorId, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'cursorId' is set
-        if (cursorId == null) {
-            throw new ApiException("Missing the required parameter 'cursorId' when calling getCursorById(Async)");
-        }
-
-        return getCursorByIdCall(cursorId, _callback);
-
-    }
-
-    /**
-     * Get cursor by ID
-     * Retrieve a specific cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @return Cursor
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public Cursor getCursorById(String cursorId) throws ApiException {
-        ApiResponse<Cursor> localVarResp = getCursorByIdWithHttpInfo(cursorId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get cursor by ID
-     * Retrieve a specific cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @return ApiResponse&lt;Cursor&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Cursor> getCursorByIdWithHttpInfo(String cursorId) throws ApiException {
-        okhttp3.Call localVarCall = getCursorByIdValidateBeforeCall(cursorId, null);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get cursor by ID (asynchronously)
-     * Retrieve a specific cursor by its unique identifier
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call getCursorByIdAsync(String cursorId, final ApiCallback<Cursor> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = getCursorByIdValidateBeforeCall(cursorId, _callback);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for listCursors
-     * @param page Page number for pagination (optional, default to 1)
-     * @param limit Number of items per page (optional, default to 10)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call listCursorsCall(Integer page, Integer limit, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/cursors";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (page != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("page", page));
-        }
-
-        if (limit != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call listCursorsValidateBeforeCall(Integer page, Integer limit, final ApiCallback _callback) throws ApiException {
-        return listCursorsCall(page, limit, _callback);
-
-    }
-
-    /**
-     * List all cursors
-     * Retrieve a list of all available cursors
-     * @param page Page number for pagination (optional, default to 1)
-     * @param limit Number of items per page (optional, default to 10)
-     * @return CursorListResponse
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public CursorListResponse listCursors(Integer page, Integer limit) throws ApiException {
-        ApiResponse<CursorListResponse> localVarResp = listCursorsWithHttpInfo(page, limit);
-        return localVarResp.getData();
-    }
-
-    /**
-     * List all cursors
-     * Retrieve a list of all available cursors
-     * @param page Page number for pagination (optional, default to 1)
-     * @param limit Number of items per page (optional, default to 10)
-     * @return ApiResponse&lt;CursorListResponse&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<CursorListResponse> listCursorsWithHttpInfo(Integer page, Integer limit) throws ApiException {
-        okhttp3.Call localVarCall = listCursorsValidateBeforeCall(page, limit, null);
-        Type localVarReturnType = new TypeToken<CursorListResponse>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * List all cursors (asynchronously)
-     * Retrieve a list of all available cursors
-     * @param page Page number for pagination (optional, default to 1)
-     * @param limit Number of items per page (optional, default to 10)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Successful response </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad request </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call listCursorsAsync(Integer page, Integer limit, final ApiCallback<CursorListResponse> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = listCursorsValidateBeforeCall(page, limit, _callback);
-        Type localVarReturnType = new TypeToken<CursorListResponse>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for moveCursor
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param moveCursorRequest  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor moved successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call moveCursorCall(String cursorId, MoveCursorRequest moveCursorRequest, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = moveCursorRequest;
-
-        // create path and map variables
-        String localVarPath = "/cursors/{cursorId}/move"
-            .replace("{" + "cursorId" + "}", localVarApiClient.escapeString(cursorId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call moveCursorValidateBeforeCall(String cursorId, MoveCursorRequest moveCursorRequest, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'cursorId' is set
-        if (cursorId == null) {
-            throw new ApiException("Missing the required parameter 'cursorId' when calling moveCursor(Async)");
-        }
-
-        // verify the required parameter 'moveCursorRequest' is set
-        if (moveCursorRequest == null) {
-            throw new ApiException("Missing the required parameter 'moveCursorRequest' when calling moveCursor(Async)");
-        }
-
-        return moveCursorCall(cursorId, moveCursorRequest, _callback);
-
-    }
-
-    /**
-     * Move cursor
-     * Move a cursor to a new position
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param moveCursorRequest  (required)
-     * @return Cursor
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor moved successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public Cursor moveCursor(String cursorId, MoveCursorRequest moveCursorRequest) throws ApiException {
-        ApiResponse<Cursor> localVarResp = moveCursorWithHttpInfo(cursorId, moveCursorRequest);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Move cursor
-     * Move a cursor to a new position
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param moveCursorRequest  (required)
-     * @return ApiResponse&lt;Cursor&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor moved successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Cursor> moveCursorWithHttpInfo(String cursorId, MoveCursorRequest moveCursorRequest) throws ApiException {
-        okhttp3.Call localVarCall = moveCursorValidateBeforeCall(cursorId, moveCursorRequest, null);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Move cursor (asynchronously)
-     * Move a cursor to a new position
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param moveCursorRequest  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor moved successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call moveCursorAsync(String cursorId, MoveCursorRequest moveCursorRequest, final ApiCallback<Cursor> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = moveCursorValidateBeforeCall(cursorId, moveCursorRequest, _callback);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for updateCursor
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param updateCursorRequest  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor updated successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call updateCursorCall(String cursorId, UpdateCursorRequest updateCursorRequest, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = updateCursorRequest;
-
-        // create path and map variables
-        String localVarPath = "/cursors/{cursorId}"
-            .replace("{" + "cursorId" + "}", localVarApiClient.escapeString(cursorId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        String[] localVarAuthNames = new String[] { "ApiKeyAuth" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call updateCursorValidateBeforeCall(String cursorId, UpdateCursorRequest updateCursorRequest, final ApiCallback _callback) throws ApiException {
-        // verify the required parameter 'cursorId' is set
-        if (cursorId == null) {
-            throw new ApiException("Missing the required parameter 'cursorId' when calling updateCursor(Async)");
-        }
-
-        // verify the required parameter 'updateCursorRequest' is set
-        if (updateCursorRequest == null) {
-            throw new ApiException("Missing the required parameter 'updateCursorRequest' when calling updateCursor(Async)");
-        }
-
-        return updateCursorCall(cursorId, updateCursorRequest, _callback);
-
-    }
-
-    /**
-     * Update cursor
-     * Update an existing cursor with new properties
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param updateCursorRequest  (required)
-     * @return Cursor
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor updated successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public Cursor updateCursor(String cursorId, UpdateCursorRequest updateCursorRequest) throws ApiException {
-        ApiResponse<Cursor> localVarResp = updateCursorWithHttpInfo(cursorId, updateCursorRequest);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Update cursor
-     * Update an existing cursor with new properties
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param updateCursorRequest  (required)
-     * @return ApiResponse&lt;Cursor&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor updated successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Cursor> updateCursorWithHttpInfo(String cursorId, UpdateCursorRequest updateCursorRequest) throws ApiException {
-        okhttp3.Call localVarCall = updateCursorValidateBeforeCall(cursorId, updateCursorRequest, null);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Update cursor (asynchronously)
-     * Update an existing cursor with new properties
-     * @param cursorId Unique identifier of the cursor (required)
-     * @param updateCursorRequest  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Cursor updated successfully </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Cursor not found </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call updateCursorAsync(String cursorId, UpdateCursorRequest updateCursorRequest, final ApiCallback<Cursor> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = updateCursorValidateBeforeCall(cursorId, updateCursorRequest, _callback);
-        Type localVarReturnType = new TypeToken<Cursor>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
+    return localVarRequestBuilder;
+  }
 }

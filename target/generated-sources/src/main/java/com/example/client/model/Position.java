@@ -13,53 +13,37 @@
 
 package com.example.client.model;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 import java.util.Objects;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.util.Arrays;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.HashMap;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.example.client.JSON;
 
 /**
  * Position
  */
+@JsonPropertyOrder({
+  Position.JSON_PROPERTY_X,
+  Position.JSON_PROPERTY_Y
+})
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class Position {
-  public static final String SERIALIZED_NAME_X = "x";
-  @SerializedName(SERIALIZED_NAME_X)
+  public static final String JSON_PROPERTY_X = "x";
   private Integer x;
 
-  public static final String SERIALIZED_NAME_Y = "y";
-  @SerializedName(SERIALIZED_NAME_Y)
+  public static final String JSON_PROPERTY_Y = "y";
   private Integer y;
 
-  public Position() {
+  public Position() { 
   }
 
   public Position x(Integer x) {
@@ -73,10 +57,16 @@ public class Position {
    * @return x
   **/
   @javax.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_X)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+
   public Integer getX() {
     return x;
   }
 
+
+  @JsonProperty(JSON_PROPERTY_X)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public void setX(Integer x) {
     this.x = x;
   }
@@ -93,16 +83,24 @@ public class Position {
    * @return y
   **/
   @javax.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_Y)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+
   public Integer getY() {
     return y;
   }
 
+
+  @JsonProperty(JSON_PROPERTY_Y)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public void setY(Integer y) {
     this.y = y;
   }
 
 
-
+  /**
+   * Return true if this Position object is equal to o.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -142,99 +140,49 @@ public class Position {
     return o.toString().replace("\n", "\n    ");
   }
 
-
-  public static HashSet<String> openapiFields;
-  public static HashSet<String> openapiRequiredFields;
-
-  static {
-    // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>();
-    openapiFields.add("x");
-    openapiFields.add("y");
-
-    // a set of required properties/fields (JSON key names)
-    openapiRequiredFields = new HashSet<String>();
-    openapiRequiredFields.add("x");
-    openapiRequiredFields.add("y");
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @return URL query string
+   */
+  public String toUrlQueryString() {
+    return toUrlQueryString(null);
   }
 
- /**
-  * Validates the JSON Element and throws an exception if issues found
-  *
-  * @param jsonElement JSON Element
-  * @throws IOException if the JSON Element is invalid with respect to Position
-  */
-  public static void validateJsonElement(JsonElement jsonElement) throws IOException {
-      if (jsonElement == null) {
-        if (!Position.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format("The required field(s) %s in Position is not found in the empty JSON string", Position.openapiRequiredFields.toString()));
-        }
-      }
-
-      Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
-      // check to see if the JSON string contains additional fields
-      for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!Position.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format("The field `%s` in the JSON string is not defined in the `Position` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
-        }
-      }
-
-      // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : Position.openapiRequiredFields) {
-        if (jsonElement.getAsJsonObject().get(requiredField) == null) {
-          throw new IllegalArgumentException(String.format("The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
-        }
-      }
-        JsonObject jsonObj = jsonElement.getAsJsonObject();
-  }
-
-  public static class CustomTypeAdapterFactory implements TypeAdapterFactory {
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!Position.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'Position' and its subtypes
-       }
-       final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<Position> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(Position.class));
-
-       return (TypeAdapter<T>) new TypeAdapter<Position>() {
-           @Override
-           public void write(JsonWriter out, Position value) throws IOException {
-             JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
-             elementAdapter.write(out, obj);
-           }
-
-           @Override
-           public Position read(JsonReader in) throws IOException {
-             JsonElement jsonElement = elementAdapter.read(in);
-             validateJsonElement(jsonElement);
-             return thisAdapter.fromJsonTree(jsonElement);
-           }
-
-       }.nullSafe();
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @param prefix prefix of the query string
+   * @return URL query string
+   */
+  public String toUrlQueryString(String prefix) {
+    String suffix = "";
+    String containerSuffix = "";
+    String containerPrefix = "";
+    if (prefix == null) {
+      // style=form, explode=true, e.g. /pet?name=cat&type=manx
+      prefix = "";
+    } else {
+      // deepObject style e.g. /pet?id[name]=cat&id[type]=manx
+      prefix = prefix + "[";
+      suffix = "]";
+      containerSuffix = "]";
+      containerPrefix = "[";
     }
-  }
 
- /**
-  * Create an instance of Position given an JSON string
-  *
-  * @param jsonString JSON string
-  * @return An instance of Position
-  * @throws IOException if the JSON string is invalid with respect to Position
-  */
-  public static Position fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, Position.class);
-  }
+    StringJoiner joiner = new StringJoiner("&");
 
- /**
-  * Convert an instance of Position to an JSON string
-  *
-  * @return JSON string
-  */
-  public String toJson() {
-    return JSON.getGson().toJson(this);
+    // add `x` to the URL query string
+    if (getX() != null) {
+      joiner.add(String.format("%sx%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getX()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `y` to the URL query string
+    if (getY() != null) {
+      joiner.add(String.format("%sy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getY()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    return joiner.toString();
   }
 }
 

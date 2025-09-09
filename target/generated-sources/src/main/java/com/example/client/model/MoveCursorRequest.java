@@ -13,58 +13,42 @@
 
 package com.example.client.model;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 import java.util.Objects;
-import com.example.client.model.Position;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.util.Arrays;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.HashMap;
+import com.example.client.model.Position;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.example.client.JSON;
 
 /**
  * MoveCursorRequest
  */
+@JsonPropertyOrder({
+  MoveCursorRequest.JSON_PROPERTY_POSITION,
+  MoveCursorRequest.JSON_PROPERTY_ANIMATE,
+  MoveCursorRequest.JSON_PROPERTY_DURATION
+})
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class MoveCursorRequest {
-  public static final String SERIALIZED_NAME_POSITION = "position";
-  @SerializedName(SERIALIZED_NAME_POSITION)
+  public static final String JSON_PROPERTY_POSITION = "position";
   private Position position;
 
-  public static final String SERIALIZED_NAME_ANIMATE = "animate";
-  @SerializedName(SERIALIZED_NAME_ANIMATE)
+  public static final String JSON_PROPERTY_ANIMATE = "animate";
   private Boolean animate = false;
 
-  public static final String SERIALIZED_NAME_DURATION = "duration";
-  @SerializedName(SERIALIZED_NAME_DURATION)
+  public static final String JSON_PROPERTY_DURATION = "duration";
   private Integer duration = 300;
 
-  public MoveCursorRequest() {
+  public MoveCursorRequest() { 
   }
 
   public MoveCursorRequest position(Position position) {
@@ -77,10 +61,16 @@ public class MoveCursorRequest {
    * @return position
   **/
   @javax.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_POSITION)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+
   public Position getPosition() {
     return position;
   }
 
+
+  @JsonProperty(JSON_PROPERTY_POSITION)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public void setPosition(Position position) {
     this.position = position;
   }
@@ -96,10 +86,16 @@ public class MoveCursorRequest {
    * @return animate
   **/
   @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_ANIMATE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
   public Boolean getAnimate() {
     return animate;
   }
 
+
+  @JsonProperty(JSON_PROPERTY_ANIMATE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnimate(Boolean animate) {
     this.animate = animate;
   }
@@ -117,16 +113,24 @@ public class MoveCursorRequest {
    * @return duration
   **/
   @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_DURATION)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
   public Integer getDuration() {
     return duration;
   }
 
+
+  @JsonProperty(JSON_PROPERTY_DURATION)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDuration(Integer duration) {
     this.duration = duration;
   }
 
 
-
+  /**
+   * Return true if this MoveCursorRequest object is equal to o.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -168,101 +172,54 @@ public class MoveCursorRequest {
     return o.toString().replace("\n", "\n    ");
   }
 
-
-  public static HashSet<String> openapiFields;
-  public static HashSet<String> openapiRequiredFields;
-
-  static {
-    // a set of all properties/fields (JSON key names)
-    openapiFields = new HashSet<String>();
-    openapiFields.add("position");
-    openapiFields.add("animate");
-    openapiFields.add("duration");
-
-    // a set of required properties/fields (JSON key names)
-    openapiRequiredFields = new HashSet<String>();
-    openapiRequiredFields.add("position");
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @return URL query string
+   */
+  public String toUrlQueryString() {
+    return toUrlQueryString(null);
   }
 
- /**
-  * Validates the JSON Element and throws an exception if issues found
-  *
-  * @param jsonElement JSON Element
-  * @throws IOException if the JSON Element is invalid with respect to MoveCursorRequest
-  */
-  public static void validateJsonElement(JsonElement jsonElement) throws IOException {
-      if (jsonElement == null) {
-        if (!MoveCursorRequest.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format("The required field(s) %s in MoveCursorRequest is not found in the empty JSON string", MoveCursorRequest.openapiRequiredFields.toString()));
-        }
-      }
-
-      Set<Map.Entry<String, JsonElement>> entries = jsonElement.getAsJsonObject().entrySet();
-      // check to see if the JSON string contains additional fields
-      for (Map.Entry<String, JsonElement> entry : entries) {
-        if (!MoveCursorRequest.openapiFields.contains(entry.getKey())) {
-          throw new IllegalArgumentException(String.format("The field `%s` in the JSON string is not defined in the `MoveCursorRequest` properties. JSON: %s", entry.getKey(), jsonElement.toString()));
-        }
-      }
-
-      // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : MoveCursorRequest.openapiRequiredFields) {
-        if (jsonElement.getAsJsonObject().get(requiredField) == null) {
-          throw new IllegalArgumentException(String.format("The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
-        }
-      }
-        JsonObject jsonObj = jsonElement.getAsJsonObject();
-      // validate the required field `position`
-      Position.validateJsonElement(jsonObj.get("position"));
-  }
-
-  public static class CustomTypeAdapterFactory implements TypeAdapterFactory {
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!MoveCursorRequest.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'MoveCursorRequest' and its subtypes
-       }
-       final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<MoveCursorRequest> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(MoveCursorRequest.class));
-
-       return (TypeAdapter<T>) new TypeAdapter<MoveCursorRequest>() {
-           @Override
-           public void write(JsonWriter out, MoveCursorRequest value) throws IOException {
-             JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
-             elementAdapter.write(out, obj);
-           }
-
-           @Override
-           public MoveCursorRequest read(JsonReader in) throws IOException {
-             JsonElement jsonElement = elementAdapter.read(in);
-             validateJsonElement(jsonElement);
-             return thisAdapter.fromJsonTree(jsonElement);
-           }
-
-       }.nullSafe();
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @param prefix prefix of the query string
+   * @return URL query string
+   */
+  public String toUrlQueryString(String prefix) {
+    String suffix = "";
+    String containerSuffix = "";
+    String containerPrefix = "";
+    if (prefix == null) {
+      // style=form, explode=true, e.g. /pet?name=cat&type=manx
+      prefix = "";
+    } else {
+      // deepObject style e.g. /pet?id[name]=cat&id[type]=manx
+      prefix = prefix + "[";
+      suffix = "]";
+      containerSuffix = "]";
+      containerPrefix = "[";
     }
-  }
 
- /**
-  * Create an instance of MoveCursorRequest given an JSON string
-  *
-  * @param jsonString JSON string
-  * @return An instance of MoveCursorRequest
-  * @throws IOException if the JSON string is invalid with respect to MoveCursorRequest
-  */
-  public static MoveCursorRequest fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, MoveCursorRequest.class);
-  }
+    StringJoiner joiner = new StringJoiner("&");
 
- /**
-  * Convert an instance of MoveCursorRequest to an JSON string
-  *
-  * @return JSON string
-  */
-  public String toJson() {
-    return JSON.getGson().toJson(this);
+    // add `position` to the URL query string
+    if (getPosition() != null) {
+      joiner.add(getPosition().toUrlQueryString(prefix + "position" + suffix));
+    }
+
+    // add `animate` to the URL query string
+    if (getAnimate() != null) {
+      joiner.add(String.format("%sanimate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAnimate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `duration` to the URL query string
+    if (getDuration() != null) {
+      joiner.add(String.format("%sduration%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDuration()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    return joiner.toString();
   }
 }
 

@@ -2,8 +2,8 @@ package com.example.client;
 
 import com.example.client.api.CursorsApi;
 import com.example.client.model.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -25,7 +25,7 @@ public class CursorsApiWireMockTest {
 
     private WireMockServer wireMockServer;
     private CursorsApi cursorsApi;
-    private Gson gson;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() {
@@ -36,17 +36,13 @@ public class CursorsApiWireMockTest {
         // Configure WireMock
         WireMock.configureFor("localhost", 8080);
         
-        // Create Gson for JSON serialization with OffsetDateTime support
-        gson = new GsonBuilder()
-            .registerTypeAdapter(OffsetDateTime.class, (JsonSerializer<OffsetDateTime>) (src, typeOfSrc, context) -> 
-                new JsonPrimitive(src.toString()))
-            .registerTypeAdapter(OffsetDateTime.class, (JsonDeserializer<OffsetDateTime>) (json, typeOfT, context) -> 
-                OffsetDateTime.parse(json.getAsString()))
-            .create();
+        // Create ObjectMapper for JSON serialization
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         
         // Create API client pointing to WireMock server
         ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath("http://localhost:8080/api/v1");
+        apiClient.setBasePath("http://localhost:8080");
         cursorsApi = new CursorsApi(apiClient);
     }
 
@@ -60,11 +56,11 @@ public class CursorsApiWireMockTest {
         // Prepare mock response using examples from OpenAPI YAML
         CursorListResponse mockResponse = createMockCursorListResponse();
         
-        stubFor(get(urlEqualTo("/api/v1/cursors?page=1&limit=10"))
+        stubFor(get(urlEqualTo("/cursors?page=1&limit=10"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(mockResponse))));
+                .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute API call
         CursorListResponse response = cursorsApi.listCursors(1, 10);
@@ -96,7 +92,7 @@ public class CursorsApiWireMockTest {
         assertEquals(1, pagination.getTotalPages());
 
         // Verify the request was made
-        verify(getRequestedFor(urlEqualTo("/api/v1/cursors?page=1&limit=10")));
+        verify(getRequestedFor(urlEqualTo("/cursors?page=1&limit=10")));
     }
 
     @Test
@@ -108,11 +104,11 @@ public class CursorsApiWireMockTest {
             "The 'page' query parameter must be greater than 0"
         );
 
-        stubFor(get(urlEqualTo("/api/v1/cursors?page=0&limit=10"))
+        stubFor(get(urlEqualTo("/cursors?page=0&limit=10"))
             .willReturn(aResponse()
                 .withStatus(400)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(errorResponse))));
+                .withBody(objectMapper.writeValueAsString(errorResponse))));
 
         // Execute and verify exception
         ApiException exception = assertThrows(ApiException.class, () -> {
@@ -120,7 +116,7 @@ public class CursorsApiWireMockTest {
         });
         
         assertEquals(400, exception.getCode());
-        verify(getRequestedFor(urlEqualTo("/api/v1/cursors?page=0&limit=10")));
+        verify(getRequestedFor(urlEqualTo("/cursors?page=0&limit=10")));
     }
 
     @Test
@@ -138,11 +134,11 @@ public class CursorsApiWireMockTest {
             "2024-01-15T12:00:00Z"
         );
 
-        stubFor(post(urlEqualTo("/api/v1/cursors"))
+        stubFor(post(urlEqualTo("/cursors"))
             .willReturn(aResponse()
                 .withStatus(201)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(mockResponse))));
+                .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute API call
         Cursor response = cursorsApi.createCursor(request);
@@ -157,7 +153,7 @@ public class CursorsApiWireMockTest {
         assertTrue(response.getActive());
 
         // Verify the request was made with correct body
-        verify(postRequestedFor(urlEqualTo("/api/v1/cursors"))
+        verify(postRequestedFor(urlEqualTo("/cursors"))
             .withHeader("Content-Type", equalTo("application/json")));
     }
 
@@ -171,11 +167,11 @@ public class CursorsApiWireMockTest {
             "Name field is required and cannot be empty"
         );
 
-        stubFor(post(urlEqualTo("/api/v1/cursors"))
+        stubFor(post(urlEqualTo("/cursors"))
             .willReturn(aResponse()
                 .withStatus(400)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(errorResponse))));
+                .withBody(objectMapper.writeValueAsString(errorResponse))));
 
         // Execute and verify exception
         ApiException exception = assertThrows(ApiException.class, () -> {
@@ -183,7 +179,7 @@ public class CursorsApiWireMockTest {
         });
         
         assertEquals(400, exception.getCode());
-        verify(postRequestedFor(urlEqualTo("/api/v1/cursors")));
+        verify(postRequestedFor(urlEqualTo("/cursors")));
     }
 
     @Test
@@ -200,11 +196,11 @@ public class CursorsApiWireMockTest {
             "2024-01-15T10:30:00Z"
         );
 
-        stubFor(get(urlEqualTo("/api/v1/cursors/" + cursorId))
+        stubFor(get(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(mockResponse))));
+                .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute API call
         Cursor response = cursorsApi.getCursorById(cursorId);
@@ -214,7 +210,7 @@ public class CursorsApiWireMockTest {
         assertEquals(cursorId, response.getId());
         assertEquals("Default Cursor", response.getName());
 
-        verify(getRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId)));
+        verify(getRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
@@ -227,11 +223,11 @@ public class CursorsApiWireMockTest {
             "No cursor exists with ID 'cursor-999'"
         );
 
-        stubFor(get(urlEqualTo("/api/v1/cursors/" + cursorId))
+        stubFor(get(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(404)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(errorResponse))));
+                .withBody(objectMapper.writeValueAsString(errorResponse))));
 
         // Execute and verify exception
         ApiException exception = assertThrows(ApiException.class, () -> {
@@ -239,7 +235,7 @@ public class CursorsApiWireMockTest {
         });
         
         assertEquals(404, exception.getCode());
-        verify(getRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId)));
+        verify(getRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
@@ -259,11 +255,11 @@ public class CursorsApiWireMockTest {
             "2024-01-15T13:15:00Z"
         );
 
-        stubFor(put(urlEqualTo("/api/v1/cursors/" + cursorId))
+        stubFor(put(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(mockResponse))));
+                .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute API call
         Cursor response = cursorsApi.updateCursor(cursorId, request);
@@ -276,14 +272,14 @@ public class CursorsApiWireMockTest {
         assertEquals(600, response.getPosition().getY());
         assertFalse(response.getActive());
 
-        verify(putRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId)));
+        verify(putRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
     public void testDeleteCursor_Success() throws Exception {
         String cursorId = "cursor-001";
 
-        stubFor(delete(urlEqualTo("/api/v1/cursors/" + cursorId))
+        stubFor(delete(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(204)));
 
@@ -292,7 +288,7 @@ public class CursorsApiWireMockTest {
             cursorsApi.deleteCursor(cursorId);
         });
 
-        verify(deleteRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId)));
+        verify(deleteRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
@@ -305,11 +301,11 @@ public class CursorsApiWireMockTest {
             "No cursor exists with ID 'cursor-999'"
         );
 
-        stubFor(delete(urlEqualTo("/api/v1/cursors/" + cursorId))
+        stubFor(delete(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(404)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(errorResponse))));
+                .withBody(objectMapper.writeValueAsString(errorResponse))));
 
         // Execute and verify exception
         ApiException exception = assertThrows(ApiException.class, () -> {
@@ -317,7 +313,7 @@ public class CursorsApiWireMockTest {
         });
         
         assertEquals(404, exception.getCode());
-        verify(deleteRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId)));
+        verify(deleteRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
@@ -337,11 +333,11 @@ public class CursorsApiWireMockTest {
             "2024-01-15T13:30:00Z"
         );
 
-        stubFor(post(urlEqualTo("/api/v1/cursors/" + cursorId + "/move"))
+        stubFor(post(urlEqualTo("/cursors/" + cursorId + "/move"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody(gson.toJson(mockResponse))));
+                .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute API call
         Cursor response = cursorsApi.moveCursor(cursorId, request);
@@ -352,7 +348,7 @@ public class CursorsApiWireMockTest {
         assertEquals(750, response.getPosition().getX());
         assertEquals(850, response.getPosition().getY());
 
-        verify(postRequestedFor(urlEqualTo("/api/v1/cursors/" + cursorId + "/move")));
+        verify(postRequestedFor(urlEqualTo("/cursors/" + cursorId + "/move")));
     }
 
     // Helper methods to create mock objects using examples from OpenAPI YAML

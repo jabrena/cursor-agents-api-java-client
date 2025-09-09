@@ -20,107 +20,128 @@ import com.example.client.model.CursorListResponse;
 import com.example.client.model.ErrorResponse;
 import com.example.client.model.MoveCursorRequest;
 import com.example.client.model.UpdateCursorRequest;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 /**
  * API tests for CursorsApi
  */
-@Disabled
+@Ignore
 public class CursorsApiTest {
 
     private final CursorsApi api = new CursorsApi();
 
+    
     /**
      * Create a new cursor
      *
      * Create a new cursor with specified properties
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void createCursorTest() throws ApiException {
         CreateCursorRequest createCursorRequest = null;
-        Cursor response = api.createCursor(createCursorRequest);
+        Cursor response = 
+        api.createCursor(createCursorRequest);
+        
         // TODO: test validations
     }
-
+    
     /**
      * Delete cursor
      *
      * Delete a cursor by its unique identifier
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void deleteCursorTest() throws ApiException {
         String cursorId = null;
+        
         api.deleteCursor(cursorId);
+        
         // TODO: test validations
     }
-
+    
     /**
      * Get cursor by ID
      *
      * Retrieve a specific cursor by its unique identifier
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void getCursorByIdTest() throws ApiException {
         String cursorId = null;
-        Cursor response = api.getCursorById(cursorId);
+        Cursor response = 
+        api.getCursorById(cursorId);
+        
         // TODO: test validations
     }
-
+    
     /**
      * List all cursors
      *
      * Retrieve a list of all available cursors
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void listCursorsTest() throws ApiException {
         Integer page = null;
         Integer limit = null;
-        CursorListResponse response = api.listCursors(page, limit);
+        CursorListResponse response = 
+        api.listCursors(page, limit);
+        
         // TODO: test validations
     }
-
+    
     /**
      * Move cursor
      *
      * Move a cursor to a new position
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void moveCursorTest() throws ApiException {
         String cursorId = null;
         MoveCursorRequest moveCursorRequest = null;
-        Cursor response = api.moveCursor(cursorId, moveCursorRequest);
+        Cursor response = 
+        api.moveCursor(cursorId, moveCursorRequest);
+        
         // TODO: test validations
     }
-
+    
     /**
      * Update cursor
      *
      * Update an existing cursor with new properties
      *
-     * @throws ApiException if the Api call fails
+     * @throws ApiException
+     *          if the Api call fails
      */
     @Test
     public void updateCursorTest() throws ApiException {
         String cursorId = null;
         UpdateCursorRequest updateCursorRequest = null;
-        Cursor response = api.updateCursor(cursorId, updateCursorRequest);
+        Cursor response = 
+        api.updateCursor(cursorId, updateCursorRequest);
+        
         // TODO: test validations
     }
-
+    
 }
