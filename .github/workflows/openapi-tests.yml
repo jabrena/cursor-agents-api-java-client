@@ -8,15 +8,6 @@ on:
       - 'src/test/java/**'
       - 'pom.xml'
       - '.github/workflows/openapi-tests.yml'
-  pull_request:
-    # Run on PRs when OpenAPI-related files change
-    paths:
-      - 'src/main/resources/openapi.yaml'
-      - 'src/test/java/**'
-      - 'pom.xml'
-      - '.github/workflows/openapi-tests.yml'
-  workflow_dispatch:
-    # Allow manual triggering
 
 jobs:
   openapi-validation:
