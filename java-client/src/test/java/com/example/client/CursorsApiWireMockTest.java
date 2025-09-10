@@ -11,26 +11,31 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * WireMock integration test for CursorsApi using payload examples from OpenAPI YAML
  */
-public class CursorsApiWireMockTest {
+class CursorsApiWireMockTest {
 
     private WireMockServer wireMockServer;
     private CursorsApi cursorsApi;
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Start WireMock server
         wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().port(8080));
         wireMockServer.start();
@@ -49,84 +54,81 @@ public class CursorsApiWireMockTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         wireMockServer.stop();
     }
 
     @Test
-    public void testListCursors_Success() throws Exception {
-        // Prepare mock response using examples from OpenAPI YAML
+    @DisplayName("Should return cursor list with pagination when valid parameters provided")
+    void should_returnCursorListWithPagination_when_validParametersProvided() throws Exception {
+        // Given
         CursorListResponse mockResponse = createMockCursorListResponse();
-
         stubFor(get(urlEqualTo("/cursors?page=1&limit=10"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Execute API call
+        // When
         CursorListResponse response = cursorsApi.listCursors(1, 10);
 
-        // Verify response
-        assertNotNull(response);
-        assertEquals(2, response.getCursors().size());
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getCursors()).hasSize(2);
 
         Cursor firstCursor = response.getCursors().get(0);
-        assertEquals("cursor-001", firstCursor.getId());
-        assertEquals("Default Cursor", firstCursor.getName());
-        assertEquals(Cursor.TypeEnum.POINTER, firstCursor.getType());
-        assertEquals(100, firstCursor.getPosition().getX());
-        assertEquals(200, firstCursor.getPosition().getY());
-        assertTrue(firstCursor.getActive());
+        assertThat(firstCursor)
+            .extracting(Cursor::getId, Cursor::getName, Cursor::getType, Cursor::getActive)
+            .containsExactly("cursor-001", "Default Cursor", Cursor.TypeEnum.POINTER, true);
+        assertThat(firstCursor.getPosition())
+            .extracting(Position::getX, Position::getY)
+            .containsExactly(100, 200);
 
         Cursor secondCursor = response.getCursors().get(1);
-        assertEquals("cursor-002", secondCursor.getId());
-        assertEquals("Text Cursor", secondCursor.getName());
-        assertEquals(Cursor.TypeEnum.TEXT, secondCursor.getType());
-        assertEquals(250, secondCursor.getPosition().getX());
-        assertEquals(150, secondCursor.getPosition().getY());
-        assertFalse(secondCursor.getActive());
+        assertThat(secondCursor)
+            .extracting(Cursor::getId, Cursor::getName, Cursor::getType, Cursor::getActive)
+            .containsExactly("cursor-002", "Text Cursor", Cursor.TypeEnum.TEXT, false);
+        assertThat(secondCursor.getPosition())
+            .extracting(Position::getX, Position::getY)
+            .containsExactly(250, 150);
 
         Pagination pagination = response.getPagination();
-        assertEquals(1, pagination.getPage());
-        assertEquals(10, pagination.getLimit());
-        assertEquals(2, pagination.getTotal());
-        assertEquals(1, pagination.getTotalPages());
+        assertThat(pagination)
+            .extracting(Pagination::getPage, Pagination::getLimit, Pagination::getTotal, Pagination::getTotalPages)
+            .containsExactly(1, 10, 2, 1);
 
-        // Verify the request was made
         verify(getRequestedFor(urlEqualTo("/cursors?page=1&limit=10")));
     }
 
     @Test
-    public void testListCursors_BadRequest() throws Exception {
-        // Mock error response using example from OpenAPI YAML
+    @DisplayName("Should throw ApiException when invalid page parameter provided")
+    void should_throwApiException_when_invalidPageParameterProvided() throws Exception {
+        // Given
         ErrorResponse errorResponse = createMockErrorResponse(
             "INVALID_PARAMETER",
             "Page parameter must be a positive integer",
             "The 'page' query parameter must be greater than 0"
         );
-
         stubFor(get(urlEqualTo("/cursors?page=0&limit=10"))
             .willReturn(aResponse()
                 .withStatus(400)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        // Execute and verify exception
-        ApiException exception = assertThrows(ApiException.class, () -> {
-            cursorsApi.listCursors(0, 10);
-        });
+        // When & Then
+        assertThatThrownBy(() -> cursorsApi.listCursors(0, 10))
+            .isInstanceOf(ApiException.class)
+            .extracting(ex -> ((ApiException) ex).getCode())
+            .isEqualTo(400);
 
-        assertEquals(400, exception.getCode());
         verify(getRequestedFor(urlEqualTo("/cursors?page=0&limit=10")));
     }
 
     @Test
-    public void testCreateCursor_Success() throws Exception {
-        // Prepare request using example from OpenAPI YAML
+    @DisplayName("Should create cursor successfully when valid request provided")
+    void should_createCursorSuccessfully_when_validRequestProvided() throws Exception {
+        // Given
         CreateCursorRequest request = createMockCreateCursorRequest();
-
-        // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             "cursor-003",
             "Gaming Cursor",
@@ -135,60 +137,58 @@ public class CursorsApiWireMockTest {
             "2024-01-15T12:00:00Z",
             "2024-01-15T12:00:00Z"
         );
-
         stubFor(post(urlEqualTo("/cursors"))
             .willReturn(aResponse()
                 .withStatus(201)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Execute API call
+        // When
         Cursor response = cursorsApi.createCursor(request);
 
-        // Verify response
-        assertNotNull(response);
-        assertEquals("cursor-003", response.getId());
-        assertEquals("Gaming Cursor", response.getName());
-        assertEquals(Cursor.TypeEnum.POINTER, response.getType());
-        assertEquals(300, response.getPosition().getX());
-        assertEquals(400, response.getPosition().getY());
-        assertTrue(response.getActive());
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response)
+            .extracting(Cursor::getId, Cursor::getName, Cursor::getType, Cursor::getActive)
+            .containsExactly("cursor-003", "Gaming Cursor", Cursor.TypeEnum.POINTER, true);
+        assertThat(response.getPosition())
+            .extracting(Position::getX, Position::getY)
+            .containsExactly(300, 400);
 
-        // Verify the request was made with correct body
         verify(postRequestedFor(urlEqualTo("/cursors"))
             .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
-    public void testCreateCursor_ValidationError() throws Exception {
+    @DisplayName("Should throw ApiException when validation error occurs")
+    void should_throwApiException_when_validationErrorOccurs() throws Exception {
+        // Given
         CreateCursorRequest request = createMockCreateCursorRequest();
-
         ErrorResponse errorResponse = createMockErrorResponse(
             "VALIDATION_ERROR",
             "Invalid cursor data provided",
             "Name field is required and cannot be empty"
         );
-
         stubFor(post(urlEqualTo("/cursors"))
             .willReturn(aResponse()
                 .withStatus(400)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        // Execute and verify exception
-        ApiException exception = assertThrows(ApiException.class, () -> {
-            cursorsApi.createCursor(request);
-        });
+        // When & Then
+        assertThatThrownBy(() -> cursorsApi.createCursor(request))
+            .isInstanceOf(ApiException.class)
+            .extracting(ex -> ((ApiException) ex).getCode())
+            .isEqualTo(400);
 
-        assertEquals(400, exception.getCode());
         verify(postRequestedFor(urlEqualTo("/cursors")));
     }
 
     @Test
-    public void testGetCursorById_Success() throws Exception {
+    @DisplayName("Should return cursor when valid ID provided")
+    void should_returnCursor_when_validIdProvided() throws Exception {
+        // Given
         String cursorId = "cursor-001";
-
-        // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
             "Default Cursor",
@@ -197,57 +197,55 @@ public class CursorsApiWireMockTest {
             "2024-01-15T10:30:00Z",
             "2024-01-15T10:30:00Z"
         );
-
         stubFor(get(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Execute API call
+        // When
         Cursor response = cursorsApi.getCursorById(cursorId);
 
-        // Verify response
-        assertNotNull(response);
-        assertEquals(cursorId, response.getId());
-        assertEquals("Default Cursor", response.getName());
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response)
+            .extracting(Cursor::getId, Cursor::getName)
+            .containsExactly(cursorId, "Default Cursor");
 
         verify(getRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
-    public void testGetCursorById_NotFound() throws Exception {
+    @DisplayName("Should throw ApiException when cursor not found")
+    void should_throwApiException_when_cursorNotFound() throws Exception {
+        // Given
         String cursorId = "cursor-999";
-
         ErrorResponse errorResponse = createMockErrorResponse(
             "CURSOR_NOT_FOUND",
             "Cursor with specified ID not found",
             "No cursor exists with ID 'cursor-999'"
         );
-
         stubFor(get(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(404)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        // Execute and verify exception
-        ApiException exception = assertThrows(ApiException.class, () -> {
-            cursorsApi.getCursorById(cursorId);
-        });
+        // When & Then
+        assertThatThrownBy(() -> cursorsApi.getCursorById(cursorId))
+            .isInstanceOf(ApiException.class)
+            .extracting(ex -> ((ApiException) ex).getCode())
+            .isEqualTo(404);
 
-        assertEquals(404, exception.getCode());
         verify(getRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
-    public void testUpdateCursor_Success() throws Exception {
+    @DisplayName("Should update cursor successfully when valid request provided")
+    void should_updateCursorSuccessfully_when_validRequestProvided() throws Exception {
+        // Given
         String cursorId = "cursor-001";
-
-        // Prepare request using example from OpenAPI YAML
         UpdateCursorRequest request = createMockUpdateCursorRequest();
-
-        // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
             "Updated Cursor",
@@ -256,76 +254,74 @@ public class CursorsApiWireMockTest {
             "2024-01-15T10:30:00Z",
             "2024-01-15T13:15:00Z"
         );
-
         stubFor(put(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Execute API call
+        // When
         Cursor response = cursorsApi.updateCursor(cursorId, request);
 
-        // Verify response
-        assertNotNull(response);
-        assertEquals(cursorId, response.getId());
-        assertEquals("Updated Cursor", response.getName());
-        assertEquals(500, response.getPosition().getX());
-        assertEquals(600, response.getPosition().getY());
-        assertFalse(response.getActive());
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response)
+            .extracting(Cursor::getId, Cursor::getName, Cursor::getActive)
+            .containsExactly(cursorId, "Updated Cursor", false);
+        assertThat(response.getPosition())
+            .extracting(Position::getX, Position::getY)
+            .containsExactly(500, 600);
 
         verify(putRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
-    public void testDeleteCursor_Success() throws Exception {
+    @DisplayName("Should delete cursor successfully when valid ID provided")
+    void should_deleteCursorSuccessfully_when_validIdProvided() throws Exception {
+        // Given
         String cursorId = "cursor-001";
-
         stubFor(delete(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(204)));
 
-        // Execute API call - should not throw exception
-        assertDoesNotThrow(() -> {
-            cursorsApi.deleteCursor(cursorId);
-        });
+        // When & Then
+        assertThatCode(() -> cursorsApi.deleteCursor(cursorId))
+            .doesNotThrowAnyException();
 
         verify(deleteRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
-    public void testDeleteCursor_NotFound() throws Exception {
+    @DisplayName("Should throw ApiException when deleting non-existent cursor")
+    void should_throwApiException_when_deletingNonExistentCursor() throws Exception {
+        // Given
         String cursorId = "cursor-999";
-
         ErrorResponse errorResponse = createMockErrorResponse(
             "CURSOR_NOT_FOUND",
             "Cursor with specified ID not found",
             "No cursor exists with ID 'cursor-999'"
         );
-
         stubFor(delete(urlEqualTo("/cursors/" + cursorId))
             .willReturn(aResponse()
                 .withStatus(404)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        // Execute and verify exception
-        ApiException exception = assertThrows(ApiException.class, () -> {
-            cursorsApi.deleteCursor(cursorId);
-        });
+        // When & Then
+        assertThatThrownBy(() -> cursorsApi.deleteCursor(cursorId))
+            .isInstanceOf(ApiException.class)
+            .extracting(ex -> ((ApiException) ex).getCode())
+            .isEqualTo(404);
 
-        assertEquals(404, exception.getCode());
         verify(deleteRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
 
     @Test
-    public void testMoveCursor_Success() throws Exception {
+    @DisplayName("Should move cursor successfully when valid request provided")
+    void should_moveCursorSuccessfully_when_validRequestProvided() throws Exception {
+        // Given
         String cursorId = "cursor-001";
-
-        // Prepare request using example from OpenAPI YAML
         MoveCursorRequest request = createMockMoveCursorRequest();
-
-        // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
             "Default Cursor",
@@ -334,23 +330,173 @@ public class CursorsApiWireMockTest {
             "2024-01-15T10:30:00Z",
             "2024-01-15T13:30:00Z"
         );
-
         stubFor(post(urlEqualTo("/cursors/" + cursorId + "/move"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Execute API call
+        // When
         Cursor response = cursorsApi.moveCursor(cursorId, request);
 
-        // Verify response
-        assertNotNull(response);
-        assertEquals(cursorId, response.getId());
-        assertEquals(750, response.getPosition().getX());
-        assertEquals(850, response.getPosition().getY());
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(cursorId);
+        assertThat(response.getPosition())
+            .extracting(Position::getX, Position::getY)
+            .containsExactly(750, 850);
 
         verify(postRequestedFor(urlEqualTo("/cursors/" + cursorId + "/move")));
+    }
+
+    @Nested
+    @DisplayName("Boundary Condition Tests")
+    class BoundaryConditionTests {
+
+        @ParameterizedTest(name = "Should handle boundary page values: {0}")
+        @ValueSource(ints = {1, Integer.MAX_VALUE})
+        @DisplayName("Should handle boundary page values correctly")
+        void should_handleBoundaryPageValues_when_validRangeProvided(int page) throws Exception {
+            // Given
+            CursorListResponse mockResponse = createMockCursorListResponse();
+            stubFor(get(urlMatching("/cursors\\?page=" + page + "&limit=10"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            CursorListResponse response = cursorsApi.listCursors(page, 10);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getCursors()).hasSize(2);
+        }
+
+        @ParameterizedTest(name = "Should handle boundary limit values: {0}")
+        @ValueSource(ints = {1, 100})
+        @DisplayName("Should handle boundary limit values correctly")
+        void should_handleBoundaryLimitValues_when_validRangeProvided(int limit) throws Exception {
+            // Given
+            CursorListResponse mockResponse = createMockCursorListResponse();
+            stubFor(get(urlMatching("/cursors\\?page=1&limit=" + limit))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            CursorListResponse response = cursorsApi.listCursors(1, limit);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getCursors()).hasSize(2);
+        }
+
+        @ParameterizedTest(name = "Should reject invalid page values: {0}")
+        @ValueSource(ints = {0, -1, -100})
+        @DisplayName("Should reject invalid page values")
+        void should_rejectInvalidPageValues_when_outOfRangeProvided(int invalidPage) throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "INVALID_PARAMETER",
+                "Page parameter must be a positive integer",
+                "The 'page' query parameter must be greater than 0"
+            );
+            stubFor(get(urlMatching("/cursors\\?page=" + invalidPage + "&limit=10"))
+                .willReturn(aResponse()
+                    .withStatus(400)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> cursorsApi.listCursors(invalidPage, 10))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(400);
+        }
+
+        @ParameterizedTest(name = "Should handle position boundary values: x={0}, y={1}")
+        @CsvSource({
+            "0, 0",
+            "0, 1080",
+            "1920, 0",
+            "1920, 1080",
+            "-100, -100"
+        })
+        @DisplayName("Should handle position boundary values correctly")
+        void should_handlePositionBoundaryValues_when_validCoordinatesProvided(int x, int y) throws Exception {
+            // Given
+            String cursorId = "cursor-001";
+            MoveCursorRequest request = new MoveCursorRequest();
+            Position position = new Position();
+            position.setX(x);
+            position.setY(y);
+            request.setPosition(position);
+            request.setAnimate(true);
+            request.setDuration(500);
+
+            Cursor mockResponse = createMockCursor(
+                cursorId, "Test Cursor", Cursor.TypeEnum.POINTER,
+                x, y, true, "2024-01-15T10:30:00Z", "2024-01-15T13:30:00Z"
+            );
+
+            stubFor(post(urlEqualTo("/cursors/" + cursorId + "/move"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            Cursor response = cursorsApi.moveCursor(cursorId, request);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getPosition())
+                .extracting(Position::getX, Position::getY)
+                .containsExactly(x, y);
+        }
+    }
+
+    @Nested
+    @DisplayName("Error Handling Tests")
+    class ErrorHandlingTests {
+
+        @Test
+        @DisplayName("Should handle network timeout gracefully")
+        void should_handleNetworkTimeout_when_serverNotResponding() {
+            // Given
+            stubFor(get(urlEqualTo("/cursors?page=1&limit=10"))
+                .willReturn(aResponse()
+                    .withFixedDelay(30000))); // 30 second delay to simulate timeout
+
+            // When & Then
+            assertThatThrownBy(() -> cursorsApi.listCursors(1, 10))
+                .isInstanceOf(Exception.class); // Could be ApiException or timeout exception
+        }
+
+        @ParameterizedTest(name = "Should handle HTTP error codes: {0}")
+        @ValueSource(ints = {400, 401, 403, 404, 500, 502, 503})
+        @DisplayName("Should handle various HTTP error codes")
+        void should_handleHttpErrorCodes_when_serverReturnsError(int errorCode) throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "ERROR_" + errorCode,
+                "Server error occurred",
+                "HTTP " + errorCode + " error details"
+            );
+            stubFor(get(urlEqualTo("/cursors?page=1&limit=10"))
+                .willReturn(aResponse()
+                    .withStatus(errorCode)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> cursorsApi.listCursors(1, 10))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(errorCode);
+        }
     }
 
     // Helper methods to create mock objects using examples from OpenAPI YAML
