@@ -1,7 +1,9 @@
 package com.example.client;
 
-import com.example.client.api.CursorsApi;
-import com.example.client.model.*;
+import info.jab.cursor.client.ApiClient;
+import info.jab.cursor.client.ApiException;
+import info.jab.cursor.client.api.CursorsApi;
+import info.jab.cursor.client.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -32,14 +34,14 @@ public class CursorsApiWireMockTest {
         // Start WireMock server
         wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().port(8080));
         wireMockServer.start();
-        
+
         // Configure WireMock
         WireMock.configureFor("localhost", 8080);
-        
+
         // Create ObjectMapper for JSON serialization
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        
+
         // Create API client pointing to WireMock server
         ApiClient apiClient = new ApiClient();
         apiClient.updateBaseUri("http://localhost:8080");
@@ -55,7 +57,7 @@ public class CursorsApiWireMockTest {
     public void testListCursors_Success() throws Exception {
         // Prepare mock response using examples from OpenAPI YAML
         CursorListResponse mockResponse = createMockCursorListResponse();
-        
+
         stubFor(get(urlEqualTo("/cursors?page=1&limit=10"))
             .willReturn(aResponse()
                 .withStatus(200)
@@ -68,7 +70,7 @@ public class CursorsApiWireMockTest {
         // Verify response
         assertNotNull(response);
         assertEquals(2, response.getCursors().size());
-        
+
         Cursor firstCursor = response.getCursors().get(0);
         assertEquals("cursor-001", firstCursor.getId());
         assertEquals("Default Cursor", firstCursor.getName());
@@ -76,7 +78,7 @@ public class CursorsApiWireMockTest {
         assertEquals(100, firstCursor.getPosition().getX());
         assertEquals(200, firstCursor.getPosition().getY());
         assertTrue(firstCursor.getActive());
-        
+
         Cursor secondCursor = response.getCursors().get(1);
         assertEquals("cursor-002", secondCursor.getId());
         assertEquals("Text Cursor", secondCursor.getName());
@@ -84,7 +86,7 @@ public class CursorsApiWireMockTest {
         assertEquals(250, secondCursor.getPosition().getX());
         assertEquals(150, secondCursor.getPosition().getY());
         assertFalse(secondCursor.getActive());
-        
+
         Pagination pagination = response.getPagination();
         assertEquals(1, pagination.getPage());
         assertEquals(10, pagination.getLimit());
@@ -99,7 +101,7 @@ public class CursorsApiWireMockTest {
     public void testListCursors_BadRequest() throws Exception {
         // Mock error response using example from OpenAPI YAML
         ErrorResponse errorResponse = createMockErrorResponse(
-            "INVALID_PARAMETER", 
+            "INVALID_PARAMETER",
             "Page parameter must be a positive integer",
             "The 'page' query parameter must be greater than 0"
         );
@@ -114,7 +116,7 @@ public class CursorsApiWireMockTest {
         ApiException exception = assertThrows(ApiException.class, () -> {
             cursorsApi.listCursors(0, 10);
         });
-        
+
         assertEquals(400, exception.getCode());
         verify(getRequestedFor(urlEqualTo("/cursors?page=0&limit=10")));
     }
@@ -123,11 +125,11 @@ public class CursorsApiWireMockTest {
     public void testCreateCursor_Success() throws Exception {
         // Prepare request using example from OpenAPI YAML
         CreateCursorRequest request = createMockCreateCursorRequest();
-        
+
         // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             "cursor-003",
-            "Gaming Cursor", 
+            "Gaming Cursor",
             Cursor.TypeEnum.POINTER,
             300, 400, true,
             "2024-01-15T12:00:00Z",
@@ -160,7 +162,7 @@ public class CursorsApiWireMockTest {
     @Test
     public void testCreateCursor_ValidationError() throws Exception {
         CreateCursorRequest request = createMockCreateCursorRequest();
-        
+
         ErrorResponse errorResponse = createMockErrorResponse(
             "VALIDATION_ERROR",
             "Invalid cursor data provided",
@@ -177,7 +179,7 @@ public class CursorsApiWireMockTest {
         ApiException exception = assertThrows(ApiException.class, () -> {
             cursorsApi.createCursor(request);
         });
-        
+
         assertEquals(400, exception.getCode());
         verify(postRequestedFor(urlEqualTo("/cursors")));
     }
@@ -185,7 +187,7 @@ public class CursorsApiWireMockTest {
     @Test
     public void testGetCursorById_Success() throws Exception {
         String cursorId = "cursor-001";
-        
+
         // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
@@ -216,7 +218,7 @@ public class CursorsApiWireMockTest {
     @Test
     public void testGetCursorById_NotFound() throws Exception {
         String cursorId = "cursor-999";
-        
+
         ErrorResponse errorResponse = createMockErrorResponse(
             "CURSOR_NOT_FOUND",
             "Cursor with specified ID not found",
@@ -233,7 +235,7 @@ public class CursorsApiWireMockTest {
         ApiException exception = assertThrows(ApiException.class, () -> {
             cursorsApi.getCursorById(cursorId);
         });
-        
+
         assertEquals(404, exception.getCode());
         verify(getRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
@@ -241,10 +243,10 @@ public class CursorsApiWireMockTest {
     @Test
     public void testUpdateCursor_Success() throws Exception {
         String cursorId = "cursor-001";
-        
+
         // Prepare request using example from OpenAPI YAML
         UpdateCursorRequest request = createMockUpdateCursorRequest();
-        
+
         // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
@@ -294,7 +296,7 @@ public class CursorsApiWireMockTest {
     @Test
     public void testDeleteCursor_NotFound() throws Exception {
         String cursorId = "cursor-999";
-        
+
         ErrorResponse errorResponse = createMockErrorResponse(
             "CURSOR_NOT_FOUND",
             "Cursor with specified ID not found",
@@ -311,7 +313,7 @@ public class CursorsApiWireMockTest {
         ApiException exception = assertThrows(ApiException.class, () -> {
             cursorsApi.deleteCursor(cursorId);
         });
-        
+
         assertEquals(404, exception.getCode());
         verify(deleteRequestedFor(urlEqualTo("/cursors/" + cursorId)));
     }
@@ -319,10 +321,10 @@ public class CursorsApiWireMockTest {
     @Test
     public void testMoveCursor_Success() throws Exception {
         String cursorId = "cursor-001";
-        
+
         // Prepare request using example from OpenAPI YAML
         MoveCursorRequest request = createMockMoveCursorRequest();
-        
+
         // Prepare response using example from OpenAPI YAML
         Cursor mockResponse = createMockCursor(
             cursorId,
@@ -355,42 +357,42 @@ public class CursorsApiWireMockTest {
 
     private CursorListResponse createMockCursorListResponse() {
         CursorListResponse response = new CursorListResponse();
-        
+
         List<Cursor> cursors = Arrays.asList(
-            createMockCursor("cursor-001", "Default Cursor", Cursor.TypeEnum.POINTER, 
+            createMockCursor("cursor-001", "Default Cursor", Cursor.TypeEnum.POINTER,
                            100, 200, true, "2024-01-15T10:30:00Z", "2024-01-15T10:30:00Z"),
-            createMockCursor("cursor-002", "Text Cursor", Cursor.TypeEnum.TEXT, 
+            createMockCursor("cursor-002", "Text Cursor", Cursor.TypeEnum.TEXT,
                            250, 150, false, "2024-01-15T09:15:00Z", "2024-01-15T11:45:00Z")
         );
         response.setCursors(cursors);
-        
+
         Pagination pagination = new Pagination();
         pagination.setPage(1);
         pagination.setLimit(10);
         pagination.setTotal(2);
         pagination.setTotalPages(1);
         response.setPagination(pagination);
-        
+
         return response;
     }
 
-    private Cursor createMockCursor(String id, String name, Cursor.TypeEnum type, 
-                                   int x, int y, boolean active, 
+    private Cursor createMockCursor(String id, String name, Cursor.TypeEnum type,
+                                   int x, int y, boolean active,
                                    String createdAt, String updatedAt) {
         Cursor cursor = new Cursor();
         cursor.setId(id);
         cursor.setName(name);
         cursor.setType(type);
-        
+
         Position position = new Position();
         position.setX(x);
         position.setY(y);
         cursor.setPosition(position);
-        
+
         cursor.setActive(active);
         cursor.setCreatedAt(OffsetDateTime.parse(createdAt));
         cursor.setUpdatedAt(OffsetDateTime.parse(updatedAt));
-        
+
         return cursor;
     }
 
@@ -398,12 +400,12 @@ public class CursorsApiWireMockTest {
         CreateCursorRequest request = new CreateCursorRequest();
         request.setName("Gaming Cursor");
         request.setType(CreateCursorRequest.TypeEnum.POINTER);
-        
+
         Position position = new Position();
         position.setX(300);
         position.setY(400);
         request.setPosition(position);
-        
+
         request.setActive(true);
         return request;
     }
@@ -411,24 +413,24 @@ public class CursorsApiWireMockTest {
     private UpdateCursorRequest createMockUpdateCursorRequest() {
         UpdateCursorRequest request = new UpdateCursorRequest();
         request.setName("Updated Cursor");
-        
+
         Position position = new Position();
         position.setX(500);
         position.setY(600);
         request.setPosition(position);
-        
+
         request.setActive(false);
         return request;
     }
 
     private MoveCursorRequest createMockMoveCursorRequest() {
         MoveCursorRequest request = new MoveCursorRequest();
-        
+
         Position position = new Position();
         position.setX(750);
         position.setY(850);
         request.setPosition(position);
-        
+
         request.setAnimate(true);
         request.setDuration(500);
         return request;
