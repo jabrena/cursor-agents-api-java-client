@@ -198,7 +198,7 @@
                             <apiPackage>info.jab.cursor.client.api</apiPackage>
                             <modelPackage>info.jab.cursor.client.model</modelPackage>
                             <invokerPackage>info.jab.cursor.client</invokerPackage>
-                            <configOptions>
+                           <configOptions>
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
                                 <performBeanValidation>false</performBeanValidation>

@@ -36,5 +36,5 @@
 jwebserver -p 8005 -d "$(pwd)/openapi/target/"
 jwebserver -p 8005 -d "$(pwd)/docs"
 
-mvn exec:java -pl java-client -Pexamples -Dexec.args="your_api_key_here"
+./mvnw clean compile exec:java -Pexamples -pl java-client -Dexec.args="your_api_key_here"
 ```
