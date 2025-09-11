@@ -9,8 +9,6 @@
     <artifactId>java-client</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <name>Cursor API Java Client</name>
-    <description>Maven project to generate Java client from OpenAPI YAML</description>
 
     <!-- Properties -->
     <properties>
