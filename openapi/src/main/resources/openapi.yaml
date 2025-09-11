@@ -12,6 +12,14 @@ servers:
   - url: https://api.cursor.com
     description: Production server
 
+tags:
+  - name: Agent Management
+    description: Operations for creating, deleting, and modifying agents
+  - name: Agent Information
+    description: Operations for retrieving agent information and status
+  - name: General Endpoints
+    description: General API operations including API key info, models, and repositories
+
 paths:
   /v0/agents:
     post:
@@ -19,7 +27,7 @@ paths:
       description: Start a new background agent to work on your repository
       operationId: launchAgent
       tags:
-        - agents
+        - Agent Management
       security:
         - BearerAuth: []
       requestBody:
@@ -148,7 +156,7 @@ paths:
       description: Retrieve a list of all background agents
       operationId: listAgents
       tags:
-        - agents
+        - Agent Information
       security:
         - BearerAuth: []
       responses:
@@ -252,7 +260,7 @@ paths:
       description: Add a follow-up message or instruction to an existing agent
       operationId: addFollowUp
       tags:
-        - agents
+        - Agent Management
       security:
         - BearerAuth: []
       parameters:
@@ -316,7 +324,7 @@ paths:
       description: Delete an agent by its unique identifier
       operationId: deleteAgent
       tags:
-        - agents
+        - Agent Management
       security:
         - BearerAuth: []
       parameters:
@@ -357,7 +365,7 @@ paths:
       description: Retrieve information about a specific agent by its unique identifier
       operationId: getAgent
       tags:
-        - agents
+        - Agent Information
       security:
         - BearerAuth: []
       parameters:
@@ -413,7 +421,7 @@ paths:
       description: Retrieve the conversation history and messages for a specific agent
       operationId: getAgentConversation
       tags:
-        - agents
+        - Agent Information
       security:
         - BearerAuth: []
       parameters:
@@ -431,44 +439,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  agentId:
-                    type: string
-                    description: Unique identifier of the agent
-                    pattern: '^bc_[a-zA-Z0-9]+$'
-                    example: "bc_abc123"
-                  messages:
-                    type: array
-                    description: Array of conversation messages
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          description: Unique identifier for the message
-                        timestamp:
-                          type: string
-                          format: date-time
-                          description: When the message was created
-                        role:
-                          type: string
-                          enum:
-                            - user
-                            - agent
-                            - system
-                          description: The role of the message sender
-                        content:
-                          type: string
-                          description: The message content
-                        type:
-                          type: string
-                          enum:
-                            - text
-                            - code
-                            - file_change
-                            - error
-                          description: Type of message content
+                $ref: '#/components/schemas/ConversationResponse'
               examples:
                 conversation_example:
                   summary: Agent conversation
@@ -528,6 +499,228 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /v0/me:
+    get:
+      summary: Get API Key Info
+      description: Retrieve metadata about the API key used for authentication
+      operationId: getApiKeyInfo
+      tags:
+        - General Endpoints
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: API key information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyInfo'
+              examples:
+                api_key_info:
+                  summary: API key information
+                  value:
+                    apiKeyName: "Production API Key"
+                    createdAt: "2024-01-15T10:30:00Z"
+                    userEmail: "developer@example.com"
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Authentication required"
+                      details: "Please provide a valid API key in the Authorization header"
+        '404':
+          description: Not Found - The requested resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Resource not found
+                  value:
+                    error:
+                      code: "NOT_FOUND"
+                      message: "The requested resource does not exist"
+                      details: "Endpoint not found"
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limit:
+                  summary: Rate limit exceeded
+                  value:
+                    error:
+                      code: "RATE_LIMIT_EXCEEDED"
+                      message: "Too many requests"
+                      details: "You have exceeded the rate limit. Please try again later"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                server_error:
+                  summary: Internal server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+                      details: "Please try again later or contact support if the issue persists"
+
+  /v0/models:
+    get:
+      summary: List Models
+      description: Retrieve a list of available models
+      operationId: listModels
+      tags:
+        - General Endpoints
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Models retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsList'
+              examples:
+                models_list:
+                  summary: List of available models
+                  value:
+                    models:
+                      - "claude-4-sonnet-thinking"
+                      - "o3"
+                      - "claude-4-opus-thinking"
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Authentication required"
+                      details: "Please provide a valid API key in the Authorization header"
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limit:
+                  summary: Rate limit exceeded
+                  value:
+                    error:
+                      code: "RATE_LIMIT_EXCEEDED"
+                      message: "Too many requests"
+                      details: "You have exceeded the rate limit. Please try again later"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                server_error:
+                  summary: Internal server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+                      details: "Please try again later or contact support if the issue persists"
+
+  /v0/repositories:
+    get:
+      summary: List GitHub Repositories
+      description: |
+        Retrieve a list of GitHub repositories accessible to the authenticated user.
+
+        **Rate Limits**: This endpoint has strict rate limits - limit requests to 1 per user per minute and 30 per user per hour.
+        The request can take tens of seconds to respond for users with access to many repositories.
+        Ensure to handle scenarios where this information is not available gracefully.
+      operationId: listRepositories
+      tags:
+        - General Endpoints
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Repositories retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoriesList'
+              examples:
+                repositories_list:
+                  summary: List of GitHub repositories
+                  value:
+                    repositories:
+                      - owner: "your-org"
+                        name: "your-repo"
+                        repository: "https://github.com/your-org/your-repo"
+                      - owner: "another-org"
+                        name: "another-repo"
+                        repository: "https://github.com/another-org/another-repo"
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Authentication required"
+                      details: "Please provide a valid API key in the Authorization header"
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limit:
+                  summary: Rate limit exceeded
+                  value:
+                    error:
+                      code: "RATE_LIMIT_EXCEEDED"
+                      message: "Too many requests"
+                      details: "You have exceeded the rate limit (1 per minute, 30 per hour). Please try again later"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                server_error:
+                  summary: Internal server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+                      details: "Please try again later or contact support if the issue persists"
 
 components:
   schemas:
@@ -720,6 +913,7 @@ components:
             - UNAUTHORIZED
             - FORBIDDEN
             - AGENT_NOT_FOUND
+            - NOT_FOUND
             - RATE_LIMIT_EXCEEDED
             - INTERNAL_ERROR
           example: "VALIDATION_ERROR"
@@ -734,6 +928,141 @@ components:
           description: Additional error details
           maxLength: 1000
           example: "The prompt text is required and cannot be empty"
+
+    ApiKeyInfo:
+      type: object
+      required:
+        - apiKeyName
+        - createdAt
+        - userEmail
+      properties:
+        apiKeyName:
+          type: string
+          description: Name of the API key
+          minLength: 1
+          maxLength: 200
+          example: "Production API Key"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the API key was created
+          example: "2024-01-15T10:30:00Z"
+        userEmail:
+          type: string
+          format: email
+          description: Email address associated with the API key
+          example: "developer@example.com"
+
+    ModelsList:
+      type: object
+      required:
+        - models
+      properties:
+        models:
+          type: array
+          description: List of available model names
+          items:
+            type: string
+            description: Model identifier
+            example: "claude-4-sonnet-thinking"
+          example:
+            - "claude-4-sonnet-thinking"
+            - "o3"
+            - "claude-4-opus-thinking"
+
+    RepositoriesList:
+      type: object
+      required:
+        - repositories
+      properties:
+        repositories:
+          type: array
+          description: List of GitHub repositories accessible to the user
+          items:
+            $ref: '#/components/schemas/Repository'
+
+    Repository:
+      type: object
+      required:
+        - owner
+        - name
+        - repository
+      properties:
+        owner:
+          type: string
+          description: Owner/organization name of the repository
+          minLength: 1
+          maxLength: 100
+          example: "your-org"
+        name:
+          type: string
+          description: Name of the repository
+          minLength: 1
+          maxLength: 100
+          example: "your-repo"
+        repository:
+          type: string
+          format: uri
+          description: Full URL of the GitHub repository
+          pattern: '^https://github\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$'
+          example: "https://github.com/your-org/your-repo"
+
+    ConversationResponse:
+      type: object
+      required:
+        - agentId
+        - messages
+      properties:
+        agentId:
+          type: string
+          description: Unique identifier of the agent
+          pattern: '^bc_[a-zA-Z0-9]+$'
+          example: "bc_abc123"
+        messages:
+          type: array
+          description: Array of conversation messages
+          items:
+            $ref: '#/components/schemas/ConversationMessage'
+
+    ConversationMessage:
+      type: object
+      required:
+        - id
+        - timestamp
+        - role
+        - content
+        - type
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message
+          example: "msg_001"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the message was created
+          example: "2024-01-15T10:30:00Z"
+        role:
+          type: string
+          enum:
+            - user
+            - agent
+            - system
+          description: The role of the message sender
+          example: "user"
+        content:
+          type: string
+          description: The message content
+          example: "Add a README.md file with installation instructions"
+        type:
+          type: string
+          enum:
+            - text
+            - code
+            - file_change
+            - error
+          description: Type of message content
+          example: "text"
 
   securitySchemes:
     BearerAuth:
