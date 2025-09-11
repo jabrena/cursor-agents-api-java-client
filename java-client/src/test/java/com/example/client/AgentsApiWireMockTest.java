@@ -2,7 +2,9 @@ package com.example.client;
 
 import info.jab.cursor.client.ApiClient;
 import info.jab.cursor.client.ApiException;
-import info.jab.cursor.client.api.AgentsApi;
+import info.jab.cursor.client.api.AgentInformationApi;
+import info.jab.cursor.client.api.AgentManagementApi;
+import info.jab.cursor.client.api.GeneralEndpointsApi;
 import info.jab.cursor.client.model.*;
 import java.net.URI;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +33,9 @@ import static org.assertj.core.api.Assertions.*;
 class AgentsApiWireMockTest {
 
     private WireMockServer wireMockServer;
-    private AgentsApi agentsApi;
+    private AgentManagementApi agentManagementApi;
+    private AgentInformationApi agentInformationApi;
+    private GeneralEndpointsApi generalEndpointsApi;
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -50,7 +54,9 @@ class AgentsApiWireMockTest {
         // Create API client pointing to WireMock server
         ApiClient apiClient = new ApiClient();
         apiClient.updateBaseUri("http://localhost:8080");
-        agentsApi = new AgentsApi(apiClient);
+        agentManagementApi = new AgentManagementApi(apiClient);
+        agentInformationApi = new AgentInformationApi(apiClient);
+        generalEndpointsApi = new GeneralEndpointsApi(apiClient);
     }
 
     @AfterEach
@@ -87,7 +93,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockResponse))));
 
             // When
-            Agent response = agentsApi.launchAgent(request);
+            Agent response = agentManagementApi.launchAgent(request);
 
             // Then
             assertThat(response).isNotNull();
@@ -123,7 +129,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.launchAgent(request))
+            assertThatThrownBy(() -> agentManagementApi.launchAgent(request))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(400);
@@ -149,7 +155,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.launchAgent(request))
+            assertThatThrownBy(() -> agentManagementApi.launchAgent(request))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(401);
@@ -182,7 +188,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockResponse))));
 
             // When
-            Agent response = agentsApi.addFollowUp(agentId, request);
+            Agent response = agentManagementApi.addFollowUp(agentId, request);
 
             // Then
             assertThat(response).isNotNull();
@@ -202,7 +208,7 @@ class AgentsApiWireMockTest {
                     .withStatus(204)));
 
             // When & Then
-            assertThatCode(() -> agentsApi.deleteAgent(agentId))
+            assertThatCode(() -> agentManagementApi.deleteAgent(agentId))
                 .doesNotThrowAnyException();
 
             verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
@@ -226,7 +232,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.deleteAgent(agentId))
+            assertThatThrownBy(() -> agentManagementApi.deleteAgent(agentId))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(404);
@@ -264,7 +270,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockResponse))));
 
             // When
-            Agent response = agentsApi.getAgent(agentId);
+            Agent response = agentInformationApi.getAgent(agentId);
 
             // Then
             assertThat(response).isNotNull();
@@ -294,7 +300,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.getAgent(agentId))
+            assertThatThrownBy(() -> agentInformationApi.getAgent(agentId))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(404);
@@ -340,7 +346,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockAgents))));
 
             // When
-            List<Agent> response = agentsApi.listAgents();
+            List<Agent> response = agentInformationApi.listAgents();
 
             // Then
             assertThat(response).isNotNull();
@@ -372,7 +378,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.listAgents())
+            assertThatThrownBy(() -> agentInformationApi.listAgents())
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(401);
@@ -385,7 +391,7 @@ class AgentsApiWireMockTest {
         void should_getAgentConversationSuccessfully_when_validIdProvided() throws Exception {
             // Given
             String agentId = "bc_abc123";
-            GetAgentConversation200Response mockResponse = createMockConversationResponse(agentId);
+            ConversationResponse mockResponse = createMockConversationResponse(agentId);
 
             stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
                 .willReturn(aResponse()
@@ -394,7 +400,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockResponse))));
 
             // When
-            GetAgentConversation200Response response = agentsApi.getAgentConversation(agentId);
+            ConversationResponse response = agentInformationApi.getAgentConversation(agentId);
 
             // Then
             assertThat(response).isNotNull();
@@ -423,7 +429,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.getAgentConversation(agentId))
+            assertThatThrownBy(() -> agentInformationApi.getAgentConversation(agentId))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(404);
@@ -449,12 +455,198 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.getAgentConversation(agentId))
+            assertThatThrownBy(() -> agentInformationApi.getAgentConversation(agentId))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(403);
 
             verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/conversation")));
+        }
+    }
+
+    @Nested
+    @DisplayName("General Endpoints")
+    class GeneralEndpointsTests {
+
+        @Test
+        @DisplayName("Should get API key info successfully when authorized")
+        void should_getApiKeyInfoSuccessfully_when_authorized() throws Exception {
+            // Given
+            ApiKeyInfo mockResponse = createMockApiKeyInfo();
+
+            stubFor(get(urlEqualTo("/v0/me"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            ApiKeyInfo response = generalEndpointsApi.getApiKeyInfo();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getApiKeyName()).isEqualTo("Production API Key");
+            assertThat(response.getUserEmail()).isEqualTo("developer@example.com");
+            assertThat(response.getCreatedAt()).isNotNull();
+
+            verify(getRequestedFor(urlEqualTo("/v0/me")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to get API key info")
+        void should_throwApiException_when_unauthorizedToGetApiKeyInfo() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/me"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.getApiKeyInfo())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/me")));
+        }
+
+        @Test
+        @DisplayName("Should list models successfully when authorized")
+        void should_listModelsSuccessfully_when_authorized() throws Exception {
+            // Given
+            ModelsList mockResponse = createMockModelsList();
+
+            stubFor(get(urlEqualTo("/v0/models"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            ModelsList response = generalEndpointsApi.listModels();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getModels()).isNotNull();
+            assertThat(response.getModels()).hasSize(3);
+            assertThat(response.getModels()).containsExactly(
+                "claude-4-sonnet-thinking",
+                "o3",
+                "claude-4-opus-thinking"
+            );
+
+            verify(getRequestedFor(urlEqualTo("/v0/models")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to list models")
+        void should_throwApiException_when_unauthorizedToListModels() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/models"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listModels())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/models")));
+        }
+
+        @Test
+        @DisplayName("Should list repositories successfully when authorized")
+        void should_listRepositoriesSuccessfully_when_authorized() throws Exception {
+            // Given
+            RepositoriesList mockResponse = createMockRepositoriesList();
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            RepositoriesList response = generalEndpointsApi.listRepositories();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getRepositories()).isNotNull();
+            assertThat(response.getRepositories()).hasSize(2);
+            assertThat(response.getRepositories().get(0))
+                .extracting(Repository::getOwner, Repository::getName)
+                .containsExactly("your-org", "your-repo");
+            assertThat(response.getRepositories().get(1))
+                .extracting(Repository::getOwner, Repository::getName)
+                .containsExactly("another-org", "another-repo");
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to list repositories")
+        void should_throwApiException_when_unauthorizedToListRepositories() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listRepositories())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
+        }
+
+        @Test
+        @DisplayName("Should handle rate limiting when listing repositories")
+        void should_handleRateLimiting_when_listingRepositories() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "RATE_LIMIT_EXCEEDED",
+                "Too many requests",
+                "You have exceeded the rate limit (1 per minute, 30 per hour). Please try again later"
+            );
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(429)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listRepositories())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(429);
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
         }
     }
 
@@ -474,7 +666,7 @@ class AgentsApiWireMockTest {
                     ;
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.getAgent("bc_test"))
+            assertThatThrownBy(() -> agentInformationApi.getAgent("bc_test"))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(500);
@@ -505,7 +697,7 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentsApi.getAgent("bc_test"))
+            assertThatThrownBy(() -> agentInformationApi.getAgent("bc_test"))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(errorCode);
@@ -528,7 +720,7 @@ class AgentsApiWireMockTest {
 
             // When & Then
             LaunchAgentRequest request = createMockLaunchAgentRequest();
-            assertThatThrownBy(() -> agentsApi.launchAgent(request))
+            assertThatThrownBy(() -> agentManagementApi.launchAgent(request))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(429);
@@ -617,39 +809,74 @@ class AgentsApiWireMockTest {
         return errorResponse;
     }
 
-    private GetAgentConversation200Response createMockConversationResponse(String agentId) {
-        GetAgentConversation200Response response = new GetAgentConversation200Response();
+    private ConversationResponse createMockConversationResponse(String agentId) {
+        ConversationResponse response = new ConversationResponse();
         response.setAgentId(agentId);
 
         // Create mock messages based on OpenAPI spec examples
-        List<GetAgentConversation200ResponseMessagesInner> messages = Arrays.asList(
+        List<ConversationMessage> messages = Arrays.asList(
             createMockMessage("msg_001", "2024-01-15T10:30:00Z",
-                GetAgentConversation200ResponseMessagesInner.RoleEnum.USER,
+                ConversationMessage.RoleEnum.USER,
                 "Add a README.md file with installation instructions",
-                GetAgentConversation200ResponseMessagesInner.TypeEnum.TEXT),
+                ConversationMessage.TypeEnum.TEXT),
             createMockMessage("msg_002", "2024-01-15T10:31:00Z",
-                GetAgentConversation200ResponseMessagesInner.RoleEnum.AGENT,
+                ConversationMessage.RoleEnum.AGENT,
                 "I'll create a comprehensive README.md file with installation instructions for your project.",
-                GetAgentConversation200ResponseMessagesInner.TypeEnum.TEXT),
+                ConversationMessage.TypeEnum.TEXT),
             createMockMessage("msg_003", "2024-01-15T10:32:00Z",
-                GetAgentConversation200ResponseMessagesInner.RoleEnum.AGENT,
+                ConversationMessage.RoleEnum.AGENT,
                 "Created README.md with installation steps, usage examples, and project overview.",
-                GetAgentConversation200ResponseMessagesInner.TypeEnum.FILE_CHANGE)
+                ConversationMessage.TypeEnum.FILE_CHANGE)
         );
 
         response.setMessages(messages);
         return response;
     }
 
-    private GetAgentConversation200ResponseMessagesInner createMockMessage(String id, String timestamp,
-            GetAgentConversation200ResponseMessagesInner.RoleEnum role, String content,
-            GetAgentConversation200ResponseMessagesInner.TypeEnum type) {
-        GetAgentConversation200ResponseMessagesInner message = new GetAgentConversation200ResponseMessagesInner();
+    private ConversationMessage createMockMessage(String id, String timestamp,
+            ConversationMessage.RoleEnum role, String content,
+            ConversationMessage.TypeEnum type) {
+        ConversationMessage message = new ConversationMessage();
         message.setId(id);
         message.setTimestamp(OffsetDateTime.parse(timestamp));
         message.setRole(role);
         message.setContent(content);
         message.setType(type);
         return message;
+    }
+
+    private ApiKeyInfo createMockApiKeyInfo() {
+        ApiKeyInfo apiKeyInfo = new ApiKeyInfo();
+        apiKeyInfo.setApiKeyName("Production API Key");
+        apiKeyInfo.setCreatedAt(OffsetDateTime.parse("2024-01-15T10:30:00Z"));
+        apiKeyInfo.setUserEmail("developer@example.com");
+        return apiKeyInfo;
+    }
+
+    private ModelsList createMockModelsList() {
+        ModelsList modelsList = new ModelsList();
+        modelsList.setModels(Arrays.asList(
+            "claude-4-sonnet-thinking",
+            "o3",
+            "claude-4-opus-thinking"
+        ));
+        return modelsList;
+    }
+
+    private RepositoriesList createMockRepositoriesList() {
+        RepositoriesList repositoriesList = new RepositoriesList();
+
+        Repository repo1 = new Repository();
+        repo1.setOwner("your-org");
+        repo1.setName("your-repo");
+        repo1.setRepository(URI.create("https://github.com/your-org/your-repo"));
+
+        Repository repo2 = new Repository();
+        repo2.setOwner("another-org");
+        repo2.setName("another-repo");
+        repo2.setRepository(URI.create("https://github.com/another-org/another-repo"));
+
+        repositoriesList.setRepositories(Arrays.asList(repo1, repo2));
+        return repositoriesList;
     }
 }
