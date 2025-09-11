@@ -9,8 +9,6 @@
     <artifactId>java-client</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <name>Cursor API Java Client</name>
-    <description>Maven project to generate Java client from OpenAPI YAML</description>
 
     <!-- Properties -->
     <properties>
@@ -257,7 +255,6 @@
                 </executions>
             </plugin>
 
-            <!-- Version management plugin - Check and update dependency/plugin versions -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
