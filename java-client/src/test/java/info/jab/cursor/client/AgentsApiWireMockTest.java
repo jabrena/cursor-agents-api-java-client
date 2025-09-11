@@ -1,4 +1,4 @@
-package com.example.client;
+package info.jab.cursor.client;
 
 import info.jab.cursor.client.ApiClient;
 import info.jab.cursor.client.ApiException;

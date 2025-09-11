@@ -1,8 +1,25 @@
-# Cursor Background Agents API for Java
+package info.jab.cursor.client;
 
-A repository to help Java developers to interact with Cursor Background Agents REST API.
+import info.jab.cursor.client.api.AgentsApi;
+import info.jab.cursor.client.model.Agent;
+import info.jab.cursor.client.model.LaunchAgentRequest;
+import info.jab.cursor.client.model.Prompt;
+import info.jab.cursor.client.model.Source;
 
-```java
+import java.net.URI;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Example demonstrating how to use the AgentsApi to launch a Cursor agent
+ * that creates a Java Hello World program and verifies compilation/execution.
+ *
+ * This example shows:
+ * - How to configure the API client
+ * - How to create a LaunchAgentRequest with proper prompt and source
+ * - How to handle the API response
+ */
 public class LaunchAgentExample {
 
     private static final String DEFAULT_API_BASE_URL = "https://api.cursor.com";
@@ -52,23 +69,3 @@ public class LaunchAgentExample {
         }
     }
 }
-```
-
-## Cursor API References
-
-- https://docs.cursor.com/en/background-agent/api/list-agents
-- https://docs.cursor.com/en/background-agent/api/agent-status
-- https://docs.cursor.com/en/background-agent/api/agent-conversation
-- https://docs.cursor.com/en/background-agent/api/launch-an-agent
-- https://docs.cursor.com/en/background-agent/api/add-followup
-- https://docs.cursor.com/en/background-agent/api/delete-agent
-- https://docs.cursor.com/en/background-agent/api/api-key-info
-- https://docs.cursor.com/en/background-agent/api/list-models
-- https://docs.cursor.com/en/background-agent/api/list-repositories
-
-## References
-
-- https://openapi-generator.tech/docs/plugins/
-- https://openapi-generator.tech/docs/generators/java
-- https://editor-next.swagger.io/
-- https://github.com/jabrena/cursor-rules-java
