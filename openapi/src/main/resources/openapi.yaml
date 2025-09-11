@@ -176,44 +176,51 @@ paths:
         - Agent Information
       security:
         - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Number of background agents to return
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: cursor
+          in: query
+          required: false
+          description: Pagination cursor from the previous response
+          schema:
+            type: string
+            minLength: 1
+            example: "bc_xyz789"
       responses:
         '200':
           description: Agents retrieved successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Agent'
+                $ref: '#/components/schemas/AgentsList'
               examples:
                 agents_list:
                   summary: List of agents
                   value:
-                    - id: "bc_abc123"
-                      name: "Add README Documentation"
-                      status: "COMPLETED"
-                      source:
-                        repository: "https://github.com/your-org/your-repo"
-                        ref: "main"
-                      target:
-                        branchName: "cursor/add-readme-1234"
-                        url: "https://cursor.com/agents?id=bc_abc123"
-                        prUrl: "https://github.com/your-org/your-repo/pull/1234"
-                        autoCreatePr: false
-                      summary: "Added README.md with installation instructions and usage examples"
-                      createdAt: "2024-01-15T10:30:00Z"
-                      updatedAt: "2024-01-15T11:45:00Z"
-                    - id: "bc_def456"
-                      name: "Fix authentication bug"
-                      status: "RUNNING"
-                      source:
-                        repository: "https://github.com/your-org/your-repo"
-                        ref: "main"
-                      target:
-                        branchName: "cursor/fix-auth-789"
-                        url: "https://cursor.com/agents?id=bc_def456"
-                        autoCreatePr: true
-                      createdAt: "2024-01-15T14:20:00Z"
+                    agents:
+                      - id: "bc_abc123"
+                        name: "Add README Documentation"
+                        status: "RUNNING"
+                        source:
+                          repository: "https://github.com/your-org/your-repo"
+                          ref: "main"
+                        target:
+                          branchName: "cursor/add-readme-1234"
+                          url: "https://cursor.com/agents?id=bc_abc123"
+                          prUrl: "https://github.com/your-org/your-repo/pull/1234"
+                          autoCreatePr: false
+                        summary: "Added README.md with installation instructions and usage examples"
+                        createdAt: "2024-01-15T10:30:00Z"
+                    nextCursor: "bc_def456"
         '401':
           description: Unauthorized - Invalid or missing API key
           content:
@@ -335,7 +342,7 @@ paths:
                       code: "AGENT_NOT_FOUND"
                       message: "Agent with specified ID not found"
 
-  /v0/agents/{agentId}:
+  /v0/agents/{id}:
     delete:
       summary: Delete an Agent
       description: Delete an agent by its unique identifier
@@ -345,7 +352,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: agentId
+        - name: id
           in: path
           required: true
           description: Unique identifier of the agent
@@ -394,7 +401,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: agentId
+        - name: id
           in: path
           required: true
           description: Unique identifier of the agent
@@ -426,7 +433,6 @@ paths:
                       autoCreatePr: false
                     summary: "Added README.md with installation instructions and usage examples"
                     createdAt: "2024-01-15T10:30:00Z"
-                    updatedAt: "2024-01-15T11:45:00Z"
         '401':
           description: Unauthorized
           content:
@@ -440,7 +446,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /v0/agents/{agentId}/conversation:
+  /v0/agents/{id}/conversation:
     get:
       summary: Get Agent Conversation
       description: Retrieve the conversation history and messages for a specific agent
@@ -450,7 +456,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: agentId
+        - name: id
           in: path
           required: true
           description: Unique identifier of the agent
@@ -469,23 +475,11 @@ paths:
                 conversation_example:
                   summary: Agent conversation
                   value:
-                    agentId: "bc_abc123"
+                    id: "bc_abc123"
                     messages:
-                      - id: "msg_001"
-                        timestamp: "2024-01-15T10:30:00Z"
-                        role: "user"
-                        content: "Add a README.md file with installation instructions"
-                        type: "text"
-                      - id: "msg_002"
-                        timestamp: "2024-01-15T10:31:00Z"
-                        role: "agent"
-                        content: "I'll create a comprehensive README.md file with installation instructions for your project."
-                        type: "text"
-                      - id: "msg_003"
-                        timestamp: "2024-01-15T10:32:00Z"
-                        role: "agent"
-                        content: "Created README.md with installation steps, usage examples, and project overview."
-                        type: "file_change"
+                      - id: "msg_123"
+                        type: "user_message"
+                        text: "Add a README.md file with installation instructions"
         '401':
           description: Unauthorized - Invalid or missing API key
           content:
@@ -1042,6 +1036,21 @@ components:
             - "o3"
             - "claude-4-opus-thinking"
 
+    AgentsList:
+      type: object
+      required:
+        - agents
+      properties:
+        agents:
+          type: array
+          description: List of background agents
+          items:
+            $ref: '#/components/schemas/Agent'
+        nextCursor:
+          type: string
+          description: Cursor for pagination to get the next set of agents
+          example: "bc_def456"
+
     RepositoriesList:
       type: object
       required:
@@ -1082,10 +1091,10 @@ components:
     ConversationResponse:
       type: object
       required:
-        - agentId
+        - id
         - messages
       properties:
-        agentId:
+        id:
           type: string
           description: Unique identifier of the agent
           pattern: '^bc_[a-zA-Z0-9]+$'
@@ -1100,41 +1109,21 @@ components:
       type: object
       required:
         - id
-        - timestamp
-        - role
-        - content
         - type
+        - text
       properties:
         id:
           type: string
           description: Unique identifier for the message
-          example: "msg_001"
-        timestamp:
+          example: "msg_123"
+        type:
           type: string
-          format: date-time
-          description: When the message was created
-          example: "2024-01-15T10:30:00Z"
-        role:
-          type: string
-          enum:
-            - user
-            - agent
-            - system
-          description: The role of the message sender
-          example: "user"
-        content:
+          description: Type of message
+          example: "user_message"
+        text:
           type: string
           description: The message content
           example: "Add a README.md file with installation instructions"
-        type:
-          type: string
-          enum:
-            - text
-            - code
-            - file_change
-            - error
-          description: Type of message content
-          example: "text"
 
   securitySchemes:
     BearerAuth:
