@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Cursor Background Agents API
   description: API for managing AI-powered coding agents that work autonomously on your repositories
@@ -114,6 +114,109 @@ paths:
                       code: "FORBIDDEN"
                       message: "Insufficient permissions"
                       details: "You don't have permission to access this repository"
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limit:
+                  summary: Rate limit exceeded
+                  value:
+                    error:
+                      code: "RATE_LIMIT_EXCEEDED"
+                      message: "Too many requests"
+                      details: "You have exceeded the rate limit. Please try again later"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                server_error:
+                  summary: Internal server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+                      details: "Please try again later or contact support if the issue persists"
+
+    get:
+      summary: List Agents
+      description: Retrieve a list of all background agents
+      operationId: listAgents
+      tags:
+        - agents
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Agents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+              examples:
+                agents_list:
+                  summary: List of agents
+                  value:
+                    - id: "bc_abc123"
+                      name: "Add README Documentation"
+                      status: "COMPLETED"
+                      source:
+                        repository: "https://github.com/your-org/your-repo"
+                        ref: "main"
+                      target:
+                        branchName: "cursor/add-readme-1234"
+                        url: "https://cursor.com/agents?id=bc_abc123"
+                        prUrl: "https://github.com/your-org/your-repo/pull/1234"
+                        autoCreatePr: false
+                      summary: "Added README.md with installation instructions and usage examples"
+                      createdAt: "2024-01-15T10:30:00Z"
+                      updatedAt: "2024-01-15T11:45:00Z"
+                    - id: "bc_def456"
+                      name: "Fix authentication bug"
+                      status: "RUNNING"
+                      source:
+                        repository: "https://github.com/your-org/your-repo"
+                        ref: "main"
+                      target:
+                        branchName: "cursor/fix-auth-789"
+                        url: "https://cursor.com/agents?id=bc_def456"
+                        autoCreatePr: true
+                      createdAt: "2024-01-15T14:20:00Z"
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Authentication required"
+                      details: "Please provide a valid API key in the Authorization header"
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Insufficient permissions
+                  value:
+                    error:
+                      code: "FORBIDDEN"
+                      message: "Insufficient permissions"
+                      details: "You don't have permission to list agents"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -286,7 +389,9 @@ paths:
                     target:
                       branchName: "cursor/add-readme-1234"
                       url: "https://cursor.com/agents?id=bc_abc123"
+                      prUrl: "https://github.com/your-org/your-repo/pull/1234"
                       autoCreatePr: false
+                    summary: "Added README.md with installation instructions and usage examples"
                     createdAt: "2024-01-15T10:30:00Z"
                     updatedAt: "2024-01-15T11:45:00Z"
         '401':
@@ -297,6 +402,128 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v0/agents/{agentId}/conversation:
+    get:
+      summary: Get Agent Conversation
+      description: Retrieve the conversation history and messages for a specific agent
+      operationId: getAgentConversation
+      tags:
+        - agents
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Unique identifier of the agent
+          schema:
+            type: string
+            pattern: '^bc_[a-zA-Z0-9]+$'
+            example: "bc_abc123"
+      responses:
+        '200':
+          description: Agent conversation retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agentId:
+                    type: string
+                    description: Unique identifier of the agent
+                    pattern: '^bc_[a-zA-Z0-9]+$'
+                    example: "bc_abc123"
+                  messages:
+                    type: array
+                    description: Array of conversation messages
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the message
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: When the message was created
+                        role:
+                          type: string
+                          enum:
+                            - user
+                            - agent
+                            - system
+                          description: The role of the message sender
+                        content:
+                          type: string
+                          description: The message content
+                        type:
+                          type: string
+                          enum:
+                            - text
+                            - code
+                            - file_change
+                            - error
+                          description: Type of message content
+              examples:
+                conversation_example:
+                  summary: Agent conversation
+                  value:
+                    agentId: "bc_abc123"
+                    messages:
+                      - id: "msg_001"
+                        timestamp: "2024-01-15T10:30:00Z"
+                        role: "user"
+                        content: "Add a README.md file with installation instructions"
+                        type: "text"
+                      - id: "msg_002"
+                        timestamp: "2024-01-15T10:31:00Z"
+                        role: "agent"
+                        content: "I'll create a comprehensive README.md file with installation instructions for your project."
+                        type: "text"
+                      - id: "msg_003"
+                        timestamp: "2024-01-15T10:32:00Z"
+                        role: "agent"
+                        content: "Created README.md with installation steps, usage examples, and project overview."
+                        type: "file_change"
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Agent not found
+                  value:
+                    error:
+                      code: "AGENT_NOT_FOUND"
+                      message: "Agent with specified ID not found"
+                      details: "No agent exists with ID 'bc_abc123'"
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -427,6 +654,11 @@ components:
           $ref: '#/components/schemas/Source'
         target:
           $ref: '#/components/schemas/Target'
+        summary:
+          type: string
+          description: Summary of the agent's task and results
+          maxLength: 1000
+          example: "Added README.md with installation instructions and usage examples"
         createdAt:
           type: string
           format: date-time
@@ -455,6 +687,11 @@ components:
           format: uri
           description: URL to access the agent in Cursor
           example: "https://cursor.com/agents?id=bc_abc123"
+        prUrl:
+          type: string
+          format: uri
+          description: URL of the associated pull request
+          example: "https://github.com/your-org/your-repo/pull/1234"
         autoCreatePr:
           type: boolean
           description: Whether a pull request is automatically created

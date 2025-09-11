@@ -58,238 +58,404 @@ class AgentsApiWireMockTest {
         wireMockServer.stop();
     }
 
-    @Test
-    @DisplayName("Should launch agent successfully when valid request provided")
-    void should_launchAgentSuccessfully_when_validRequestProvided() throws Exception {
-        // Given
-        LaunchAgentRequest request = createMockLaunchAgentRequest();
-        Agent mockResponse = createMockAgent(
-            "bc_abc123",
-            "Add README Documentation",
-            Agent.StatusEnum.CREATING,
-            "https://github.com/your-org/your-repo",
-            "main",
-            "cursor/add-readme-1234",
-            "https://cursor.com/agents?id=bc_abc123",
-            false,
-            "2024-01-15T10:30:00Z",
-            null
-        );
+    @Nested
+    @DisplayName("Agent management")
+    class AgentManagementTests {
 
-        stubFor(post(urlEqualTo("/v0/agents"))
-            .willReturn(aResponse()
-                .withStatus(201)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(mockResponse))));
+        @Test
+        @DisplayName("Should launch agent successfully when valid request provided")
+        void should_launchAgentSuccessfully_when_validRequestProvided() throws Exception {
+            // Given
+            LaunchAgentRequest request = createMockLaunchAgentRequest();
+            Agent mockResponse = createMockAgent(
+                "bc_abc123",
+                "Add README Documentation",
+                Agent.StatusEnum.CREATING,
+                "https://github.com/your-org/your-repo",
+                "main",
+                "cursor/add-readme-1234",
+                "https://cursor.com/agents?id=bc_abc123",
+                false,
+                "2024-01-15T10:30:00Z",
+                null
+            );
 
-        // When
-        Agent response = agentsApi.launchAgent(request);
+            stubFor(post(urlEqualTo("/v0/agents"))
+                .willReturn(aResponse()
+                    .withStatus(201)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        // Then
-        assertThat(response).isNotNull();
-        assertThat(response)
-            .extracting(Agent::getId, Agent::getName, Agent::getStatus)
-            .containsExactly("bc_abc123", "Add README Documentation", Agent.StatusEnum.CREATING);
-        assertThat(response.getSource())
-            .extracting(Source::getRepository, Source::getRef)
-            .containsExactly(URI.create("https://github.com/your-org/your-repo"), "main");
-        assertThat(response.getTarget())
-            .extracting(Target::getBranchName, Target::getUrl, Target::getAutoCreatePr)
-            .containsExactly("cursor/add-readme-1234", URI.create("https://cursor.com/agents?id=bc_abc123"), false);
+            // When
+            Agent response = agentsApi.launchAgent(request);
 
-        verify(postRequestedFor(urlEqualTo("/v0/agents"))
-            .withHeader("Content-Type", equalTo("application/json")));
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response)
+                .extracting(Agent::getId, Agent::getName, Agent::getStatus)
+                .containsExactly("bc_abc123", "Add README Documentation", Agent.StatusEnum.CREATING);
+            assertThat(response.getSource())
+                .extracting(Source::getRepository, Source::getRef)
+                .containsExactly(URI.create("https://github.com/your-org/your-repo"), "main");
+            assertThat(response.getTarget())
+                .extracting(Target::getBranchName, Target::getUrl, Target::getAutoCreatePr)
+                .containsExactly("cursor/add-readme-1234", URI.create("https://cursor.com/agents?id=bc_abc123"), false);
+
+            verify(postRequestedFor(urlEqualTo("/v0/agents"))
+                .withHeader("Content-Type", equalTo("application/json")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when validation error occurs during launch")
+        void should_throwApiException_when_validationErrorOccursDuringLaunch() throws Exception {
+            // Given
+            LaunchAgentRequest request = createMockLaunchAgentRequest();
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "VALIDATION_ERROR",
+                "Invalid request data",
+                "The prompt text is required and cannot be empty"
+            );
+
+            stubFor(post(urlEqualTo("/v0/agents"))
+                .willReturn(aResponse()
+                    .withStatus(400)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.launchAgent(request))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(400);
+
+            verify(postRequestedFor(urlEqualTo("/v0/agents")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized")
+        void should_throwApiException_when_unauthorized() throws Exception {
+            // Given
+            LaunchAgentRequest request = createMockLaunchAgentRequest();
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(post(urlEqualTo("/v0/agents"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.launchAgent(request))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+        }
+
+
+        @Test
+        @DisplayName("Should add follow-up successfully when valid request provided")
+        void should_addFollowUpSuccessfully_when_validRequestProvided() throws Exception {
+            // Given
+            String agentId = "bc_abc123";
+            FollowUpRequest request = createMockFollowUpRequest();
+            Agent mockResponse = createMockAgent(
+                agentId,
+                "Add README Documentation",
+                Agent.StatusEnum.RUNNING,
+                "https://github.com/your-org/your-repo",
+                "main",
+                "cursor/add-readme-1234",
+                "https://cursor.com/agents?id=bc_abc123",
+                false,
+                "2024-01-15T10:30:00Z",
+                "2024-01-15T12:00:00Z"
+            );
+
+            stubFor(post(urlEqualTo("/v0/agents/" + agentId + "/follow-up"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            Agent response = agentsApi.addFollowUp(agentId, request);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getId()).isEqualTo(agentId);
+            assertThat(response.getStatus()).isEqualTo(Agent.StatusEnum.RUNNING);
+
+            verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/follow-up")));
+        }
+
+        @Test
+        @DisplayName("Should delete agent successfully when valid ID provided")
+        void should_deleteAgentSuccessfully_when_validIdProvided() throws Exception {
+            // Given
+            String agentId = "bc_abc123";
+            stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
+                .willReturn(aResponse()
+                    .withStatus(204)));
+
+            // When & Then
+            assertThatCode(() -> agentsApi.deleteAgent(agentId))
+                .doesNotThrowAnyException();
+
+            verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when deleting non-existent agent")
+        void should_throwApiException_when_deletingNonExistentAgent() throws Exception {
+            // Given
+            String agentId = "bc_nonexistent";
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "AGENT_NOT_FOUND",
+                "Agent with specified ID not found",
+                "No agent exists with ID 'bc_nonexistent'"
+            );
+
+            stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
+                .willReturn(aResponse()
+                    .withStatus(404)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.deleteAgent(agentId))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(404);
+
+            verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
+        }
     }
 
-    @Test
-    @DisplayName("Should throw ApiException when validation error occurs during launch")
-    void should_throwApiException_when_validationErrorOccursDuringLaunch() throws Exception {
-        // Given
-        LaunchAgentRequest request = createMockLaunchAgentRequest();
-        ErrorResponse errorResponse = createMockErrorResponse(
-            "VALIDATION_ERROR",
-            "Invalid request data",
-            "The prompt text is required and cannot be empty"
-        );
+    @Nested
+    @DisplayName("Agent information")
+    class AgentInformationTests {
 
-        stubFor(post(urlEqualTo("/v0/agents"))
-            .willReturn(aResponse()
-                .withStatus(400)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(errorResponse))));
+        @Test
+        @DisplayName("Should get agent successfully when valid ID provided")
+        void should_getAgentSuccessfully_when_validIdProvided() throws Exception {
+            // Given
+            String agentId = "bc_abc123";
+            Agent mockResponse = createMockAgent(
+                agentId,
+                "Add README Documentation",
+                Agent.StatusEnum.COMPLETED,
+                "https://github.com/your-org/your-repo",
+                "main",
+                "cursor/add-readme-1234",
+                "https://cursor.com/agents?id=bc_abc123",
+                false,
+                "2024-01-15T10:30:00Z",
+                "2024-01-15T11:45:00Z"
+            );
 
-        // When & Then
-        assertThatThrownBy(() -> agentsApi.launchAgent(request))
-            .isInstanceOf(ApiException.class)
-            .extracting(ex -> ((ApiException) ex).getCode())
-            .isEqualTo(400);
+            stubFor(get(urlEqualTo("/v0/agents/" + agentId))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-        verify(postRequestedFor(urlEqualTo("/v0/agents")));
-    }
+            // When
+            Agent response = agentsApi.getAgent(agentId);
 
-    @Test
-    @DisplayName("Should throw ApiException when unauthorized")
-    void should_throwApiException_when_unauthorized() throws Exception {
-        // Given
-        LaunchAgentRequest request = createMockLaunchAgentRequest();
-        ErrorResponse errorResponse = createMockErrorResponse(
-            "UNAUTHORIZED",
-            "Authentication required",
-            "Please provide a valid API key in the Authorization header"
-        );
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response)
+                .extracting(Agent::getId, Agent::getName, Agent::getStatus)
+                .containsExactly(agentId, "Add README Documentation", Agent.StatusEnum.COMPLETED);
+            assertThat(response.getUpdatedAt()).isNotNull();
 
-        stubFor(post(urlEqualTo("/v0/agents"))
-            .willReturn(aResponse()
-                .withStatus(401)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(errorResponse))));
+            verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
+        }
 
-        // When & Then
-        assertThatThrownBy(() -> agentsApi.launchAgent(request))
-            .isInstanceOf(ApiException.class)
-            .extracting(ex -> ((ApiException) ex).getCode())
-            .isEqualTo(401);
-    }
+        @Test
+        @DisplayName("Should throw ApiException when agent not found")
+        void should_throwApiException_when_agentNotFound() throws Exception {
+            // Given
+            String agentId = "bc_nonexistent";
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "AGENT_NOT_FOUND",
+                "Agent with specified ID not found",
+                "No agent exists with ID 'bc_nonexistent'"
+            );
 
-    @Test
-    @DisplayName("Should get agent successfully when valid ID provided")
-    void should_getAgentSuccessfully_when_validIdProvided() throws Exception {
-        // Given
-        String agentId = "bc_abc123";
-        Agent mockResponse = createMockAgent(
-            agentId,
-            "Add README Documentation",
-            Agent.StatusEnum.COMPLETED,
-            "https://github.com/your-org/your-repo",
-            "main",
-            "cursor/add-readme-1234",
-            "https://cursor.com/agents?id=bc_abc123",
-            false,
-            "2024-01-15T10:30:00Z",
-            "2024-01-15T11:45:00Z"
-        );
+            stubFor(get(urlEqualTo("/v0/agents/" + agentId))
+                .willReturn(aResponse()
+                    .withStatus(404)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        stubFor(get(urlEqualTo("/v0/agents/" + agentId))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(mockResponse))));
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.getAgent(agentId))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(404);
 
-        // When
-        Agent response = agentsApi.getAgent(agentId);
+            verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
+        }
 
-        // Then
-        assertThat(response).isNotNull();
-        assertThat(response)
-            .extracting(Agent::getId, Agent::getName, Agent::getStatus)
-            .containsExactly(agentId, "Add README Documentation", Agent.StatusEnum.COMPLETED);
-        assertThat(response.getUpdatedAt()).isNotNull();
+        @Test
+        @DisplayName("Should list agents successfully when authorized")
+        void should_listAgentsSuccessfully_when_authorized() throws Exception {
+            // Given
+            List<Agent> mockAgents = Arrays.asList(
+                createMockAgent(
+                    "bc_abc123",
+                    "Add README Documentation",
+                    Agent.StatusEnum.COMPLETED,
+                    "https://github.com/your-org/your-repo",
+                    "main",
+                    "cursor/add-readme-1234",
+                    "https://cursor.com/agents?id=bc_abc123",
+                    false,
+                    "2024-01-15T10:30:00Z",
+                    "2024-01-15T11:45:00Z"
+                ),
+                createMockAgent(
+                    "bc_def456",
+                    "Fix authentication bug",
+                    Agent.StatusEnum.RUNNING,
+                    "https://github.com/your-org/your-repo",
+                    "main",
+                    "cursor/fix-auth-789",
+                    "https://cursor.com/agents?id=bc_def456",
+                    true,
+                    "2024-01-15T14:20:00Z",
+                    null
+                )
+            );
 
-        verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
-    }
+            stubFor(get(urlEqualTo("/v0/agents"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockAgents))));
 
-    @Test
-    @DisplayName("Should throw ApiException when agent not found")
-    void should_throwApiException_when_agentNotFound() throws Exception {
-        // Given
-        String agentId = "bc_nonexistent";
-        ErrorResponse errorResponse = createMockErrorResponse(
-            "AGENT_NOT_FOUND",
-            "Agent with specified ID not found",
-            "No agent exists with ID 'bc_nonexistent'"
-        );
+            // When
+            List<Agent> response = agentsApi.listAgents();
 
-        stubFor(get(urlEqualTo("/v0/agents/" + agentId))
-            .willReturn(aResponse()
-                .withStatus(404)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(errorResponse))));
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response).hasSize(2);
+            assertThat(response.get(0))
+                .extracting(Agent::getId, Agent::getName, Agent::getStatus)
+                .containsExactly("bc_abc123", "Add README Documentation", Agent.StatusEnum.COMPLETED);
+            assertThat(response.get(1))
+                .extracting(Agent::getId, Agent::getName, Agent::getStatus)
+                .containsExactly("bc_def456", "Fix authentication bug", Agent.StatusEnum.RUNNING);
 
-        // When & Then
-        assertThatThrownBy(() -> agentsApi.getAgent(agentId))
-            .isInstanceOf(ApiException.class)
-            .extracting(ex -> ((ApiException) ex).getCode())
-            .isEqualTo(404);
+            verify(getRequestedFor(urlEqualTo("/v0/agents")));
+        }
 
-        verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
-    }
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to list agents")
+        void should_throwApiException_when_unauthorizedToListAgents() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
 
-    @Test
-    @DisplayName("Should add follow-up successfully when valid request provided")
-    void should_addFollowUpSuccessfully_when_validRequestProvided() throws Exception {
-        // Given
-        String agentId = "bc_abc123";
-        FollowUpRequest request = createMockFollowUpRequest();
-        Agent mockResponse = createMockAgent(
-            agentId,
-            "Add README Documentation",
-            Agent.StatusEnum.RUNNING,
-            "https://github.com/your-org/your-repo",
-            "main",
-            "cursor/add-readme-1234",
-            "https://cursor.com/agents?id=bc_abc123",
-            false,
-            "2024-01-15T10:30:00Z",
-            "2024-01-15T12:00:00Z"
-        );
+            stubFor(get(urlEqualTo("/v0/agents"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        stubFor(post(urlEqualTo("/v0/agents/" + agentId + "/follow-up"))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(mockResponse))));
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.listAgents())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
 
-        // When
-        Agent response = agentsApi.addFollowUp(agentId, request);
+            verify(getRequestedFor(urlEqualTo("/v0/agents")));
+        }
 
-        // Then
-        assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(agentId);
-        assertThat(response.getStatus()).isEqualTo(Agent.StatusEnum.RUNNING);
+        @Test
+        @DisplayName("Should get agent conversation successfully when valid ID provided")
+        void should_getAgentConversationSuccessfully_when_validIdProvided() throws Exception {
+            // Given
+            String agentId = "bc_abc123";
+            GetAgentConversation200Response mockResponse = createMockConversationResponse(agentId);
 
-        verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/follow-up")));
-    }
+            stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-    @Test
-    @DisplayName("Should delete agent successfully when valid ID provided")
-    void should_deleteAgentSuccessfully_when_validIdProvided() throws Exception {
-        // Given
-        String agentId = "bc_abc123";
-        stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
-            .willReturn(aResponse()
-                .withStatus(204)));
+            // When
+            GetAgentConversation200Response response = agentsApi.getAgentConversation(agentId);
 
-        // When & Then
-        assertThatCode(() -> agentsApi.deleteAgent(agentId))
-            .doesNotThrowAnyException();
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getAgentId()).isEqualTo(agentId);
+            assertThat(response.getMessages()).isNotNull();
+            assertThat(response.getMessages()).hasSize(3);
 
-        verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
-    }
+            verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/conversation")));
+        }
 
-    @Test
-    @DisplayName("Should throw ApiException when deleting non-existent agent")
-    void should_throwApiException_when_deletingNonExistentAgent() throws Exception {
-        // Given
-        String agentId = "bc_nonexistent";
-        ErrorResponse errorResponse = createMockErrorResponse(
-            "AGENT_NOT_FOUND",
-            "Agent with specified ID not found",
-            "No agent exists with ID 'bc_nonexistent'"
-        );
+        @Test
+        @DisplayName("Should throw ApiException when agent conversation not found")
+        void should_throwApiException_when_agentConversationNotFound() throws Exception {
+            // Given
+            String agentId = "bc_nonexistent";
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "AGENT_NOT_FOUND",
+                "Agent with specified ID not found",
+                "No agent exists with ID 'bc_nonexistent'"
+            );
 
-        stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
-            .willReturn(aResponse()
-                .withStatus(404)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(errorResponse))));
+            stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
+                .willReturn(aResponse()
+                    .withStatus(404)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
 
-        // When & Then
-        assertThatThrownBy(() -> agentsApi.deleteAgent(agentId))
-            .isInstanceOf(ApiException.class)
-            .extracting(ex -> ((ApiException) ex).getCode())
-            .isEqualTo(404);
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.getAgentConversation(agentId))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(404);
 
-        verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
+            verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/conversation")));
+        }
+
+        @Test
+        @DisplayName("Should handle forbidden access when getting agent conversation")
+        void should_handleForbiddenAccess_when_gettingAgentConversation() throws Exception {
+            // Given
+            String agentId = "bc_abc123";
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "FORBIDDEN",
+                "Insufficient permissions",
+                "You don't have permission to access this agent's conversation"
+            );
+
+            stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
+                .willReturn(aResponse()
+                    .withStatus(403)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> agentsApi.getAgentConversation(agentId))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(403);
+
+            verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/conversation")));
+        }
     }
 
     @Nested
@@ -449,5 +615,41 @@ class AgentsApiWireMockTest {
         error.setDetails(details);
         errorResponse.setError(error);
         return errorResponse;
+    }
+
+    private GetAgentConversation200Response createMockConversationResponse(String agentId) {
+        GetAgentConversation200Response response = new GetAgentConversation200Response();
+        response.setAgentId(agentId);
+
+        // Create mock messages based on OpenAPI spec examples
+        List<GetAgentConversation200ResponseMessagesInner> messages = Arrays.asList(
+            createMockMessage("msg_001", "2024-01-15T10:30:00Z",
+                GetAgentConversation200ResponseMessagesInner.RoleEnum.USER,
+                "Add a README.md file with installation instructions",
+                GetAgentConversation200ResponseMessagesInner.TypeEnum.TEXT),
+            createMockMessage("msg_002", "2024-01-15T10:31:00Z",
+                GetAgentConversation200ResponseMessagesInner.RoleEnum.AGENT,
+                "I'll create a comprehensive README.md file with installation instructions for your project.",
+                GetAgentConversation200ResponseMessagesInner.TypeEnum.TEXT),
+            createMockMessage("msg_003", "2024-01-15T10:32:00Z",
+                GetAgentConversation200ResponseMessagesInner.RoleEnum.AGENT,
+                "Created README.md with installation steps, usage examples, and project overview.",
+                GetAgentConversation200ResponseMessagesInner.TypeEnum.FILE_CHANGE)
+        );
+
+        response.setMessages(messages);
+        return response;
+    }
+
+    private GetAgentConversation200ResponseMessagesInner createMockMessage(String id, String timestamp,
+            GetAgentConversation200ResponseMessagesInner.RoleEnum role, String content,
+            GetAgentConversation200ResponseMessagesInner.TypeEnum type) {
+        GetAgentConversation200ResponseMessagesInner message = new GetAgentConversation200ResponseMessagesInner();
+        message.setId(id);
+        message.setTimestamp(OffsetDateTime.parse(timestamp));
+        message.setRole(role);
+        message.setContent(content);
+        message.setType(type);
+        return message;
     }
 }
