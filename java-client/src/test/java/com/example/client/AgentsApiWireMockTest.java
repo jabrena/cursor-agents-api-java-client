@@ -465,6 +465,192 @@ class AgentsApiWireMockTest {
     }
 
     @Nested
+    @DisplayName("General Endpoints")
+    class GeneralEndpointsTests {
+
+        @Test
+        @DisplayName("Should get API key info successfully when authorized")
+        void should_getApiKeyInfoSuccessfully_when_authorized() throws Exception {
+            // Given
+            ApiKeyInfo mockResponse = createMockApiKeyInfo();
+
+            stubFor(get(urlEqualTo("/v0/me"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            ApiKeyInfo response = generalEndpointsApi.getApiKeyInfo();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getApiKeyName()).isEqualTo("Production API Key");
+            assertThat(response.getUserEmail()).isEqualTo("developer@example.com");
+            assertThat(response.getCreatedAt()).isNotNull();
+
+            verify(getRequestedFor(urlEqualTo("/v0/me")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to get API key info")
+        void should_throwApiException_when_unauthorizedToGetApiKeyInfo() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/me"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.getApiKeyInfo())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/me")));
+        }
+
+        @Test
+        @DisplayName("Should list models successfully when authorized")
+        void should_listModelsSuccessfully_when_authorized() throws Exception {
+            // Given
+            ModelsList mockResponse = createMockModelsList();
+
+            stubFor(get(urlEqualTo("/v0/models"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            ModelsList response = generalEndpointsApi.listModels();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getModels()).isNotNull();
+            assertThat(response.getModels()).hasSize(3);
+            assertThat(response.getModels()).containsExactly(
+                "claude-4-sonnet-thinking",
+                "o3",
+                "claude-4-opus-thinking"
+            );
+
+            verify(getRequestedFor(urlEqualTo("/v0/models")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to list models")
+        void should_throwApiException_when_unauthorizedToListModels() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/models"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listModels())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/models")));
+        }
+
+        @Test
+        @DisplayName("Should list repositories successfully when authorized")
+        void should_listRepositoriesSuccessfully_when_authorized() throws Exception {
+            // Given
+            RepositoriesList mockResponse = createMockRepositoriesList();
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
+
+            // When
+            RepositoriesList response = generalEndpointsApi.listRepositories();
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getRepositories()).isNotNull();
+            assertThat(response.getRepositories()).hasSize(2);
+            assertThat(response.getRepositories().get(0))
+                .extracting(Repository::getOwner, Repository::getName)
+                .containsExactly("your-org", "your-repo");
+            assertThat(response.getRepositories().get(1))
+                .extracting(Repository::getOwner, Repository::getName)
+                .containsExactly("another-org", "another-repo");
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
+        }
+
+        @Test
+        @DisplayName("Should throw ApiException when unauthorized to list repositories")
+        void should_throwApiException_when_unauthorizedToListRepositories() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "UNAUTHORIZED",
+                "Authentication required",
+                "Please provide a valid API key in the Authorization header"
+            );
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listRepositories())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(401);
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
+        }
+
+        @Test
+        @DisplayName("Should handle rate limiting when listing repositories")
+        void should_handleRateLimiting_when_listingRepositories() throws Exception {
+            // Given
+            ErrorResponse errorResponse = createMockErrorResponse(
+                "RATE_LIMIT_EXCEEDED",
+                "Too many requests",
+                "You have exceeded the rate limit (1 per minute, 30 per hour). Please try again later"
+            );
+
+            stubFor(get(urlEqualTo("/v0/repositories"))
+                .willReturn(aResponse()
+                    .withStatus(429)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(errorResponse))));
+
+            // When & Then
+            assertThatThrownBy(() -> generalEndpointsApi.listRepositories())
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(429);
+
+            verify(getRequestedFor(urlEqualTo("/v0/repositories")));
+        }
+    }
+
+    @Nested
     @DisplayName("Error Handling Tests")
     class ErrorHandlingTests {
 
@@ -657,5 +843,40 @@ class AgentsApiWireMockTest {
         message.setContent(content);
         message.setType(type);
         return message;
+    }
+
+    private ApiKeyInfo createMockApiKeyInfo() {
+        ApiKeyInfo apiKeyInfo = new ApiKeyInfo();
+        apiKeyInfo.setApiKeyName("Production API Key");
+        apiKeyInfo.setCreatedAt(OffsetDateTime.parse("2024-01-15T10:30:00Z"));
+        apiKeyInfo.setUserEmail("developer@example.com");
+        return apiKeyInfo;
+    }
+
+    private ModelsList createMockModelsList() {
+        ModelsList modelsList = new ModelsList();
+        modelsList.setModels(Arrays.asList(
+            "claude-4-sonnet-thinking",
+            "o3",
+            "claude-4-opus-thinking"
+        ));
+        return modelsList;
+    }
+
+    private RepositoriesList createMockRepositoriesList() {
+        RepositoriesList repositoriesList = new RepositoriesList();
+
+        Repository repo1 = new Repository();
+        repo1.setOwner("your-org");
+        repo1.setName("your-repo");
+        repo1.setRepository(URI.create("https://github.com/your-org/your-repo"));
+
+        Repository repo2 = new Repository();
+        repo2.setOwner("another-org");
+        repo2.setName("another-repo");
+        repo2.setRepository(URI.create("https://github.com/another-org/another-repo"));
+
+        repositoriesList.setRepositories(Arrays.asList(repo1, repo2));
+        return repositoriesList;
     }
 }
