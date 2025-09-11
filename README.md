@@ -2,6 +2,17 @@
 
 A repository to help Java developers to interact with Cursor Background Agents REST API.
 
+## Quick Start
+
+### 1. Get Your API Key
+
+- Go to [Cursor Settings](https://cursor.com/settings) → API section
+- Copy your API key
+
+### 2. Test the example
+
+Review the example from this repository:
+
 ```java
 public class LaunchAgentExample {
 
@@ -52,6 +63,19 @@ public class LaunchAgentExample {
         }
     }
 }
+```
+
+And execute in the terminal:
+
+```bash
+./mvnw clean compile exec:java -Pexamples -pl java-client -Dexec.args="YOUR_CURSOR_KEY"
+```
+
+You should see somethink like this:
+
+```bash
+Agent launched: bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb (CREATING)
+Monitor at: https://cursor.com/agents?id=bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb
 ```
 
 ## Cursor API References
