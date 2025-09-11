@@ -29,7 +29,9 @@
 
 # Generate project reports
 ./mvnw site
+./mvnw clean verify -pl openapi
 ./mvnw clean package -Ppromote
 
+jwebserver -p 8005 -d "$(pwd)/openapi/target/"
 jwebserver -p 8005 -d "$(pwd)/docs"
 ```
