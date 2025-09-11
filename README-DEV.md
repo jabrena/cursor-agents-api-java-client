@@ -29,6 +29,7 @@
 
 # Generate project reports
 ./mvnw site
+./mvnw clean verify
 ./mvnw clean verify -pl openapi
 ./mvnw clean package -Ppromote
 
