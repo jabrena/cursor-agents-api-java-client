@@ -33,7 +33,7 @@
 ./mvnw clean verify -pl openapi
 ./mvnw clean package -Ppromote
 
-jwebserver -p 8005 -d "$(pwd)/openapi/target/"
+jwebserver -p 8005 -d "$(pwd)/openapi/target/swagger-ui/"
 jwebserver -p 8005 -d "$(pwd)/docs"
 
 ./mvnw clean compile exec:java -Pexamples -pl java-client -Dexec.args="your_api_key_here"

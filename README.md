@@ -2,6 +2,12 @@
 
 A repository to help Java developers to interact with Cursor Background Agents REST API.
 
+The project is divided in 3 parts:
+
+- [Open API Specification](./openapi/src/main/resources/openapi.yaml) to interact with `Cursor background APIs`.
+- [Swagger UI](https://jabrena.github.io/cursor-agents-api-java-client/) to understand better how to interact the different endpoints.
+- Java API generated from the OpenAPI Specification.
+
 ## Quick Start
 
 ### 1. Get Your API Key

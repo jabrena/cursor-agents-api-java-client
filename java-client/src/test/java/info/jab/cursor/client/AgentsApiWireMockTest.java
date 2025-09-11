@@ -331,22 +331,27 @@ class AgentsApiWireMockTest {
                 )
             );
 
+            AgentsList mockAgentsList = new AgentsList()
+                .agents(mockAgents)
+                .nextCursor("bc_def456");
+
             stubFor(get(urlEqualTo("/v0/agents"))
                 .willReturn(aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
-                    .withBody(objectMapper.writeValueAsString(mockAgents))));
+                    .withBody(objectMapper.writeValueAsString(mockAgentsList))));
 
             // When
-            List<Agent> response = agentInformationApi.listAgents();
+            AgentsList response = agentInformationApi.listAgents(null, null);
 
             // Then
             assertThat(response).isNotNull();
-            assertThat(response).hasSize(2);
-            assertThat(response.get(0))
+            assertThat(response.getAgents()).hasSize(2);
+            assertThat(response.getNextCursor()).isEqualTo("bc_def456");
+            assertThat(response.getAgents().get(0))
                 .extracting(Agent::getId, Agent::getName, Agent::getStatus)
                 .containsExactly("bc_abc123", "Add README Documentation", Agent.StatusEnum.COMPLETED);
-            assertThat(response.get(1))
+            assertThat(response.getAgents().get(1))
                 .extracting(Agent::getId, Agent::getName, Agent::getStatus)
                 .containsExactly("bc_def456", "Fix authentication bug", Agent.StatusEnum.RUNNING);
 
@@ -369,12 +374,140 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(errorResponse))));
 
             // When & Then
-            assertThatThrownBy(() -> agentInformationApi.listAgents())
+            assertThatThrownBy(() -> agentInformationApi.listAgents(null, null))
                 .isInstanceOf(ApiException.class)
                 .extracting(ex -> ((ApiException) ex).getCode())
                 .isEqualTo(401);
 
             verify(getRequestedFor(urlEqualTo("/v0/agents")));
+        }
+
+        @Test
+        @DisplayName("Should list agents with limit parameter")
+        void should_listAgentsWithLimit_when_limitProvided() throws Exception {
+            // Given
+            List<Agent> mockAgents = Arrays.asList(
+                createMockAgent(
+                    "bc_abc123",
+                    "Add README Documentation",
+                    Agent.StatusEnum.COMPLETED,
+                    "https://github.com/your-org/your-repo",
+                    "main",
+                    "cursor/add-readme-1234",
+                    "https://cursor.com/agents?id=bc_abc123",
+                    false,
+                    "2024-01-15T10:30:00Z",
+                    "2024-01-15T11:45:00Z"
+                )
+            );
+
+            AgentsList mockAgentsList = new AgentsList()
+                .agents(mockAgents)
+                .nextCursor("bc_def456");
+
+            stubFor(get(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("limit", equalTo("10"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockAgentsList))));
+
+            // When
+            AgentsList response = agentInformationApi.listAgents(10, null);
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getAgents()).hasSize(1);
+            assertThat(response.getNextCursor()).isEqualTo("bc_def456");
+
+            verify(getRequestedFor(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("limit", equalTo("10")));
+        }
+
+        @Test
+        @DisplayName("Should list agents with cursor parameter")
+        void should_listAgentsWithCursor_when_cursorProvided() throws Exception {
+            // Given
+            List<Agent> mockAgents = Arrays.asList(
+                createMockAgent(
+                    "bc_def456",
+                    "Fix authentication bug",
+                    Agent.StatusEnum.RUNNING,
+                    "https://github.com/your-org/your-repo",
+                    "main",
+                    "cursor/fix-auth-789",
+                    "https://cursor.com/agents?id=bc_def456",
+                    true,
+                    "2024-01-15T14:20:00Z",
+                    null
+                )
+            );
+
+            AgentsList mockAgentsList = new AgentsList()
+                .agents(mockAgents)
+                .nextCursor("bc_ghi789");
+
+            stubFor(get(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("cursor", equalTo("bc_xyz789"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockAgentsList))));
+
+            // When
+            AgentsList response = agentInformationApi.listAgents(null, "bc_xyz789");
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getAgents()).hasSize(1);
+            assertThat(response.getNextCursor()).isEqualTo("bc_ghi789");
+
+            verify(getRequestedFor(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("cursor", equalTo("bc_xyz789")));
+        }
+
+        @Test
+        @DisplayName("Should list agents with both limit and cursor parameters")
+        void should_listAgentsWithLimitAndCursor_when_bothProvided() throws Exception {
+            // Given
+            List<Agent> mockAgents = Arrays.asList(
+                createMockAgent(
+                    "bc_def456",
+                    "Fix authentication bug",
+                    Agent.StatusEnum.RUNNING,
+                    "https://github.com/your-org/your-repo",
+                    "main",
+                    "cursor/fix-auth-789",
+                    "https://cursor.com/agents?id=bc_def456",
+                    true,
+                    "2024-01-15T14:20:00Z",
+                    null
+                )
+            );
+
+            AgentsList mockAgentsList = new AgentsList()
+                .agents(mockAgents)
+                .nextCursor("bc_ghi789");
+
+            stubFor(get(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("limit", equalTo("5"))
+                .withQueryParam("cursor", equalTo("bc_xyz789"))
+                .willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockAgentsList))));
+
+            // When
+            AgentsList response = agentInformationApi.listAgents(5, "bc_xyz789");
+
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getAgents()).hasSize(1);
+            assertThat(response.getNextCursor()).isEqualTo("bc_ghi789");
+
+            verify(getRequestedFor(urlPathEqualTo("/v0/agents"))
+                .withQueryParam("limit", equalTo("5"))
+                .withQueryParam("cursor", equalTo("bc_xyz789")));
         }
 
         @Test
@@ -395,9 +528,9 @@ class AgentsApiWireMockTest {
 
             // Then
             assertThat(response).isNotNull();
-            assertThat(response.getAgentId()).isEqualTo(agentId);
+            assertThat(response.getId()).isEqualTo(agentId);
             assertThat(response.getMessages()).isNotNull();
-            assertThat(response.getMessages()).hasSize(3);
+            assertThat(response.getMessages()).hasSize(1);
 
             verify(getRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/conversation")));
         }
@@ -793,37 +926,22 @@ class AgentsApiWireMockTest {
 
     private ConversationResponse createMockConversationResponse(String agentId) {
         ConversationResponse response = new ConversationResponse();
-        response.setAgentId(agentId);
+        response.setId(agentId);
 
-        // Create mock messages based on OpenAPI spec examples
+        // Create mock messages based on actual API format
         List<ConversationMessage> messages = Arrays.asList(
-            createMockMessage("msg_001", "2024-01-15T10:30:00Z",
-                ConversationMessage.RoleEnum.USER,
-                "Add a README.md file with installation instructions",
-                ConversationMessage.TypeEnum.TEXT),
-            createMockMessage("msg_002", "2024-01-15T10:31:00Z",
-                ConversationMessage.RoleEnum.AGENT,
-                "I'll create a comprehensive README.md file with installation instructions for your project.",
-                ConversationMessage.TypeEnum.TEXT),
-            createMockMessage("msg_003", "2024-01-15T10:32:00Z",
-                ConversationMessage.RoleEnum.AGENT,
-                "Created README.md with installation steps, usage examples, and project overview.",
-                ConversationMessage.TypeEnum.FILE_CHANGE)
+            createMockMessage("msg_123", "user_message", "Add a README.md file with installation instructions")
         );
 
         response.setMessages(messages);
         return response;
     }
 
-    private ConversationMessage createMockMessage(String id, String timestamp,
-            ConversationMessage.RoleEnum role, String content,
-            ConversationMessage.TypeEnum type) {
+    private ConversationMessage createMockMessage(String id, String type, String text) {
         ConversationMessage message = new ConversationMessage();
         message.setId(id);
-        message.setTimestamp(OffsetDateTime.parse(timestamp));
-        message.setRole(role);
-        message.setContent(content);
         message.setType(type);
+        message.setText(text);
         return message;
     }
 
