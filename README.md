@@ -2,7 +2,28 @@
 
 A repository to help Java developers to interact with Cursor Background Agents REST API.
 
-The project is divided in 3 parts:
+Cursor provides the following REST endpoints:
+
+**Agent Management:**
+
+- https://docs.cursor.com/en/background-agent/api/launch-an-agent
+- https://docs.cursor.com/en/background-agent/api/add-followup
+- https://docs.cursor.com/en/background-agent/api/delete-agent
+
+**Agent Information:**
+
+- https://docs.cursor.com/en/background-agent/api/list-agents
+- https://docs.cursor.com/en/background-agent/api/agent-status
+- https://docs.cursor.com/en/background-agent/api/agent-conversation
+
+**General Endpoints:**
+
+- https://docs.cursor.com/en/background-agent/api/api-key-info
+- https://docs.cursor.com/en/background-agent/api/list-models
+- https://docs.cursor.com/en/background-agent/api/list-repositories
+
+And this project unify this fragmented information in a OpenAPI Specification in order to generate a Java API Client from it. 
+The repository is divided in 3 parts:
 
 - [Open API Specification](./openapi/src/main/resources/openapi.yaml) to interact with `Cursor background APIs`.
 - [Swagger UI](https://jabrena.github.io/cursor-agents-api-java-client/) to understand better how to interact the different endpoints.
@@ -90,26 +111,6 @@ You should see somethink like this:
 Agent launched: bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb (CREATING)
 Monitor at: https://cursor.com/agents?id=bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb
 ```
-
-## Cursor API References
-
-### Agent Management
-
-- https://docs.cursor.com/en/background-agent/api/launch-an-agent
-- https://docs.cursor.com/en/background-agent/api/add-followup
-- https://docs.cursor.com/en/background-agent/api/delete-agent
-
-### Agent Information
-
-- https://docs.cursor.com/en/background-agent/api/list-agents
-- https://docs.cursor.com/en/background-agent/api/agent-status
-- https://docs.cursor.com/en/background-agent/api/agent-conversation
-
-### General Endpoints
-
-- https://docs.cursor.com/en/background-agent/api/api-key-info
-- https://docs.cursor.com/en/background-agent/api/list-models
-- https://docs.cursor.com/en/background-agent/api/list-repositories
 
 ## References
 
