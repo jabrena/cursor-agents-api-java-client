@@ -87,12 +87,20 @@ Monitor at: https://cursor.com/agents?id=bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb
 
 ## Cursor API References
 
-- https://docs.cursor.com/en/background-agent/api/list-agents
-- https://docs.cursor.com/en/background-agent/api/agent-status
-- https://docs.cursor.com/en/background-agent/api/agent-conversation
+### Agent Management
+
 - https://docs.cursor.com/en/background-agent/api/launch-an-agent
 - https://docs.cursor.com/en/background-agent/api/add-followup
 - https://docs.cursor.com/en/background-agent/api/delete-agent
+
+### Agent Information
+
+- https://docs.cursor.com/en/background-agent/api/list-agents
+- https://docs.cursor.com/en/background-agent/api/agent-status
+- https://docs.cursor.com/en/background-agent/api/agent-conversation
+
+### General Endpoints
+
 - https://docs.cursor.com/en/background-agent/api/api-key-info
 - https://docs.cursor.com/en/background-agent/api/list-models
 - https://docs.cursor.com/en/background-agent/api/list-repositories

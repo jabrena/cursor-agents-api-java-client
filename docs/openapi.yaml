@@ -115,7 +115,6 @@ paths:
                     error:
                       code: "VALIDATION_ERROR"
                       message: "Invalid request data"
-                      details: "The prompt text is required and cannot be empty"
         '401':
           description: Unauthorized - Invalid or missing API key
           content:
@@ -129,7 +128,6 @@ paths:
                     error:
                       code: "UNAUTHORIZED"
                       message: "Authentication required"
-                      details: "Please provide a valid API key in the Authorization header"
         '403':
           description: Forbidden - Insufficient permissions
           content:
@@ -143,7 +141,6 @@ paths:
                     error:
                       code: "FORBIDDEN"
                       message: "Insufficient permissions"
-                      details: "You don't have permission to access this repository"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -157,7 +154,6 @@ paths:
                     error:
                       code: "RATE_LIMIT_EXCEEDED"
                       message: "Too many requests"
-                      details: "You have exceeded the rate limit. Please try again later"
         '500':
           description: Internal Server Error
           content:
@@ -171,7 +167,6 @@ paths:
                     error:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
-                      details: "Please try again later or contact support if the issue persists"
 
     get:
       summary: List Agents
@@ -232,7 +227,6 @@ paths:
                     error:
                       code: "UNAUTHORIZED"
                       message: "Authentication required"
-                      details: "Please provide a valid API key in the Authorization header"
         '403':
           description: Forbidden - Insufficient permissions
           content:
@@ -246,7 +240,6 @@ paths:
                     error:
                       code: "FORBIDDEN"
                       message: "Insufficient permissions"
-                      details: "You don't have permission to list agents"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -260,7 +253,6 @@ paths:
                     error:
                       code: "RATE_LIMIT_EXCEEDED"
                       message: "Too many requests"
-                      details: "You have exceeded the rate limit. Please try again later"
         '500':
           description: Internal Server Error
           content:
@@ -274,7 +266,6 @@ paths:
                     error:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
-                      details: "Please try again later or contact support if the issue persists"
 
   /v0/agents/{agentId}/follow-up:
     post:
@@ -312,7 +303,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
+                $ref: '#/components/schemas/FollowUpResponse'
+              examples:
+                followup_success:
+                  summary: Follow-up added successfully
+                  value:
+                    id: "bc_abc123"
         '400':
           description: Bad request
           content:
@@ -338,7 +334,6 @@ paths:
                     error:
                       code: "AGENT_NOT_FOUND"
                       message: "Agent with specified ID not found"
-                      details: "No agent exists with ID 'bc_abc123'"
 
   /v0/agents/{agentId}:
     delete:
@@ -359,8 +354,17 @@ paths:
             pattern: '^bc_[a-zA-Z0-9]+$'
             example: "bc_abc123"
       responses:
-        '204':
+        '200':
           description: Agent deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAgentResponse'
+              examples:
+                delete_success:
+                  summary: Agent deleted successfully
+                  value:
+                    id: "bc_abc123"
         '401':
           description: Unauthorized
           content:
@@ -380,7 +384,6 @@ paths:
                     error:
                       code: "AGENT_NOT_FOUND"
                       message: "Agent with specified ID not found"
-                      details: "No agent exists with ID 'bc_abc123'"
 
     get:
       summary: Get Agent Information
@@ -508,7 +511,6 @@ paths:
                     error:
                       code: "AGENT_NOT_FOUND"
                       message: "Agent with specified ID not found"
-                      details: "No agent exists with ID 'bc_abc123'"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -558,7 +560,6 @@ paths:
                     error:
                       code: "UNAUTHORIZED"
                       message: "Authentication required"
-                      details: "Please provide a valid API key in the Authorization header"
         '404':
           description: Not Found - The requested resource does not exist
           content:
@@ -572,7 +573,6 @@ paths:
                     error:
                       code: "NOT_FOUND"
                       message: "The requested resource does not exist"
-                      details: "Endpoint not found"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -586,7 +586,6 @@ paths:
                     error:
                       code: "RATE_LIMIT_EXCEEDED"
                       message: "Too many requests"
-                      details: "You have exceeded the rate limit. Please try again later"
         '500':
           description: Internal Server Error
           content:
@@ -600,7 +599,6 @@ paths:
                     error:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
-                      details: "Please try again later or contact support if the issue persists"
 
   /v0/models:
     get:
@@ -639,7 +637,6 @@ paths:
                     error:
                       code: "UNAUTHORIZED"
                       message: "Authentication required"
-                      details: "Please provide a valid API key in the Authorization header"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -653,7 +650,6 @@ paths:
                     error:
                       code: "RATE_LIMIT_EXCEEDED"
                       message: "Too many requests"
-                      details: "You have exceeded the rate limit. Please try again later"
         '500':
           description: Internal Server Error
           content:
@@ -667,7 +663,6 @@ paths:
                     error:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
-                      details: "Please try again later or contact support if the issue persists"
 
   /v0/repositories:
     get:
@@ -714,7 +709,6 @@ paths:
                     error:
                       code: "UNAUTHORIZED"
                       message: "Authentication required"
-                      details: "Please provide a valid API key in the Authorization header"
         '429':
           description: Too Many Requests - Rate limit exceeded
           content:
@@ -728,7 +722,6 @@ paths:
                     error:
                       code: "RATE_LIMIT_EXCEEDED"
                       message: "Too many requests"
-                      details: "You have exceeded the rate limit (1 per minute, 30 per hour). Please try again later"
         '500':
           description: Internal Server Error
           content:
@@ -742,7 +735,6 @@ paths:
                     error:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
-                      details: "Please try again later or contact support if the issue persists"
 
 components:
   schemas:
@@ -773,6 +765,28 @@ components:
       properties:
         prompt:
           $ref: '#/components/schemas/Prompt'
+
+    FollowUpResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the agent
+          pattern: '^bc_[a-zA-Z0-9]+$'
+          example: "bc_abc123"
+
+    DeleteAgentResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the deleted agent
+          pattern: '^bc_[a-zA-Z0-9]+$'
+          example: "bc_abc123"
 
     Prompt:
       type: object
@@ -986,11 +1000,6 @@ components:
           minLength: 1
           maxLength: 500
           example: "Invalid request data"
-        details:
-          type: string
-          description: Additional error details
-          maxLength: 1000
-          example: "The prompt text is required and cannot be empty"
 
     ApiKeyInfo:
       type: object
