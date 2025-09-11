@@ -265,4 +265,64 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Profiles -->
+    <profiles>
+        <!-- Profile to include examples as source code -->
+        <profile>
+            <id>examples</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Build helper plugin - Add examples sources to build path -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>${maven-plugin-build-helper.version}</version>
+                        <executions>
+                            <execution>
+                                <id>add-example-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${project.basedir}/src/examples/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Maven compiler plugin with examples configuration -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>${maven-plugin-compiler.version}</version>
+                        <configuration>
+                            <release>${java.version}</release>
+                            <!-- Include examples in compilation -->
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Maven exec plugin for running examples -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.4.1</version>
+                        <configuration>
+                            <mainClass>info.jab.cursor.client.LaunchAgentExample</mainClass>
+                            <commandlineArgs>${exec.args}</commandlineArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
