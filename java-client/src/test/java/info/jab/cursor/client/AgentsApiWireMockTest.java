@@ -118,8 +118,7 @@ class AgentsApiWireMockTest {
             LaunchAgentRequest request = createMockLaunchAgentRequest();
             ErrorResponse errorResponse = createMockErrorResponse(
                 "VALIDATION_ERROR",
-                "Invalid request data",
-                "The prompt text is required and cannot be empty"
+                "Invalid request data"
             );
 
             stubFor(post(urlEqualTo("/v0/agents"))
@@ -144,8 +143,7 @@ class AgentsApiWireMockTest {
             LaunchAgentRequest request = createMockLaunchAgentRequest();
             ErrorResponse errorResponse = createMockErrorResponse(
                 "UNAUTHORIZED",
-                "Authentication required",
-                "Please provide a valid API key in the Authorization header"
+                "Authentication required"
             );
 
             stubFor(post(urlEqualTo("/v0/agents"))
@@ -168,18 +166,8 @@ class AgentsApiWireMockTest {
             // Given
             String agentId = "bc_abc123";
             FollowUpRequest request = createMockFollowUpRequest();
-            Agent mockResponse = createMockAgent(
-                agentId,
-                "Add README Documentation",
-                Agent.StatusEnum.RUNNING,
-                "https://github.com/your-org/your-repo",
-                "main",
-                "cursor/add-readme-1234",
-                "https://cursor.com/agents?id=bc_abc123",
-                false,
-                "2024-01-15T10:30:00Z",
-                "2024-01-15T12:00:00Z"
-            );
+            FollowUpResponse mockResponse = new FollowUpResponse();
+            mockResponse.setId(agentId);
 
             stubFor(post(urlEqualTo("/v0/agents/" + agentId + "/follow-up"))
                 .willReturn(aResponse()
@@ -188,12 +176,11 @@ class AgentsApiWireMockTest {
                     .withBody(objectMapper.writeValueAsString(mockResponse))));
 
             // When
-            Agent response = agentManagementApi.addFollowUp(agentId, request);
+            FollowUpResponse response = agentManagementApi.addFollowUp(agentId, request);
 
             // Then
             assertThat(response).isNotNull();
             assertThat(response.getId()).isEqualTo(agentId);
-            assertThat(response.getStatus()).isEqualTo(Agent.StatusEnum.RUNNING);
 
             verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/follow-up")));
         }
@@ -203,14 +190,21 @@ class AgentsApiWireMockTest {
         void should_deleteAgentSuccessfully_when_validIdProvided() throws Exception {
             // Given
             String agentId = "bc_abc123";
+            DeleteAgentResponse mockResponse = new DeleteAgentResponse();
+            mockResponse.setId(agentId);
+
             stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
                 .willReturn(aResponse()
-                    .withStatus(204)));
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(objectMapper.writeValueAsString(mockResponse))));
 
-            // When & Then
-            assertThatCode(() -> agentManagementApi.deleteAgent(agentId))
-                .doesNotThrowAnyException();
+            // When
+            DeleteAgentResponse response = agentManagementApi.deleteAgent(agentId);
 
+            // Then
+            assertThat(response).isNotNull();
+            assertThat(response.getId()).isEqualTo(agentId);
             verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId)));
         }
 
@@ -221,8 +215,7 @@ class AgentsApiWireMockTest {
             String agentId = "bc_nonexistent";
             ErrorResponse errorResponse = createMockErrorResponse(
                 "AGENT_NOT_FOUND",
-                "Agent with specified ID not found",
-                "No agent exists with ID 'bc_nonexistent'"
+                "Agent with specified ID not found"
             );
 
             stubFor(delete(urlEqualTo("/v0/agents/" + agentId))
@@ -289,8 +282,7 @@ class AgentsApiWireMockTest {
             String agentId = "bc_nonexistent";
             ErrorResponse errorResponse = createMockErrorResponse(
                 "AGENT_NOT_FOUND",
-                "Agent with specified ID not found",
-                "No agent exists with ID 'bc_nonexistent'"
+                "Agent with specified ID not found"
             );
 
             stubFor(get(urlEqualTo("/v0/agents/" + agentId))
@@ -367,8 +359,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "UNAUTHORIZED",
-                "Authentication required",
-                "Please provide a valid API key in the Authorization header"
+                "Authentication required"
             );
 
             stubFor(get(urlEqualTo("/v0/agents"))
@@ -418,8 +409,7 @@ class AgentsApiWireMockTest {
             String agentId = "bc_nonexistent";
             ErrorResponse errorResponse = createMockErrorResponse(
                 "AGENT_NOT_FOUND",
-                "Agent with specified ID not found",
-                "No agent exists with ID 'bc_nonexistent'"
+                "Agent with specified ID not found"
             );
 
             stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
@@ -444,8 +434,7 @@ class AgentsApiWireMockTest {
             String agentId = "bc_abc123";
             ErrorResponse errorResponse = createMockErrorResponse(
                 "FORBIDDEN",
-                "Insufficient permissions",
-                "You don't have permission to access this agent's conversation"
+                "Insufficient permissions"
             );
 
             stubFor(get(urlEqualTo("/v0/agents/" + agentId + "/conversation"))
@@ -498,8 +487,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "UNAUTHORIZED",
-                "Authentication required",
-                "Please provide a valid API key in the Authorization header"
+                "Authentication required"
             );
 
             stubFor(get(urlEqualTo("/v0/me"))
@@ -551,8 +539,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "UNAUTHORIZED",
-                "Authentication required",
-                "Please provide a valid API key in the Authorization header"
+                "Authentication required"
             );
 
             stubFor(get(urlEqualTo("/v0/models"))
@@ -605,8 +592,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "UNAUTHORIZED",
-                "Authentication required",
-                "Please provide a valid API key in the Authorization header"
+                "Authentication required"
             );
 
             stubFor(get(urlEqualTo("/v0/repositories"))
@@ -630,8 +616,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "RATE_LIMIT_EXCEEDED",
-                "Too many requests",
-                "You have exceeded the rate limit (1 per minute, 30 per hour). Please try again later"
+                "Too many requests"
             );
 
             stubFor(get(urlEqualTo("/v0/repositories"))
@@ -662,7 +647,7 @@ class AgentsApiWireMockTest {
                 .willReturn(aResponse()
                     .withStatus(500)
                     .withHeader("Content-Type", "application/json")
-                    .withBody("{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"Connection failed\",\"details\":\"Server unavailable\"}}")))
+                    .withBody("{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"Connection failed\"}}")))
                     ;
 
             // When & Then
@@ -687,8 +672,7 @@ class AgentsApiWireMockTest {
             };
             ErrorResponse errorResponse = createMockErrorResponse(
                 errorCodeString,
-                "Server error occurred",
-                "HTTP " + errorCode + " error details"
+                "Server error occurred"
             );
             stubFor(get(urlEqualTo("/v0/agents/bc_test"))
                 .willReturn(aResponse()
@@ -709,8 +693,7 @@ class AgentsApiWireMockTest {
             // Given
             ErrorResponse errorResponse = createMockErrorResponse(
                 "RATE_LIMIT_EXCEEDED",
-                "Too many requests",
-                "You have exceeded the rate limit. Please try again later"
+                "Too many requests"
             );
             stubFor(post(urlEqualTo("/v0/agents"))
                 .willReturn(aResponse()
@@ -799,12 +782,11 @@ class AgentsApiWireMockTest {
         return agent;
     }
 
-    private ErrorResponse createMockErrorResponse(String code, String message, String details) {
+    private ErrorResponse createMockErrorResponse(String code, String message) {
         ErrorResponse errorResponse = new ErrorResponse();
         info.jab.cursor.client.model.Error error = new info.jab.cursor.client.model.Error();
         error.setCode(info.jab.cursor.client.model.Error.CodeEnum.fromValue(code));
         error.setMessage(message);
-        error.setDetails(details);
         errorResponse.setError(error);
         return errorResponse;
     }

@@ -23,6 +23,7 @@ public class LaunchAgentExample {
                                               """;
     private static final String REPOSITORY_URL = "https://github.com/jabrena/cursor-background-agent-api-java-hello-world";
     private static final String REPOSITORY_BRANCH = "main";
+    private static final String DEFAULT_MODEL = "claude-4-sonnet";
 
     public static void main(String[] args) {
         try {
@@ -43,10 +44,16 @@ public class LaunchAgentExample {
             source.setRepository(URI.create(REPOSITORY_URL));
             source.setRef(REPOSITORY_BRANCH);
 
+            // Create the target configuration (optional)
+            TargetRequest target = new TargetRequest();
+            target.setAutoCreatePr(true);  // Automatically create PR when agent completes
+
             // Create the launch request
             LaunchAgentRequest request = new LaunchAgentRequest();
             request.setPrompt(prompt);
             request.setSource(source);
+            request.setModel(DEFAULT_MODEL);  // Specify the LLM model to use (optional)
+            request.setTarget(target);  // Set target configuration (optional)
 
             // Launch the agent (with authentication headers)
             Map<String, String> headers = new HashMap<>();
@@ -80,12 +87,20 @@ Monitor at: https://cursor.com/agents?id=bc-fd85dce9-64d0-4c73-86ca-f74d87fa1ddb
 
 ## Cursor API References
 
-- https://docs.cursor.com/en/background-agent/api/list-agents
-- https://docs.cursor.com/en/background-agent/api/agent-status
-- https://docs.cursor.com/en/background-agent/api/agent-conversation
+### Agent Management
+
 - https://docs.cursor.com/en/background-agent/api/launch-an-agent
 - https://docs.cursor.com/en/background-agent/api/add-followup
 - https://docs.cursor.com/en/background-agent/api/delete-agent
+
+### Agent Information
+
+- https://docs.cursor.com/en/background-agent/api/list-agents
+- https://docs.cursor.com/en/background-agent/api/agent-status
+- https://docs.cursor.com/en/background-agent/api/agent-conversation
+
+### General Endpoints
+
 - https://docs.cursor.com/en/background-agent/api/api-key-info
 - https://docs.cursor.com/en/background-agent/api/list-models
 - https://docs.cursor.com/en/background-agent/api/list-repositories
