@@ -257,7 +257,6 @@
                 </executions>
             </plugin>
 
-            <!-- Version management plugin - Check and update dependency/plugin versions -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>

@@ -29,5 +29,8 @@
 
 # Generate project reports
 ./mvnw site
-jwebserver -p 8005 -d "$(pwd)/target/site/"
+./mvnw clean generate-resources process-resources -pl openapi
+./mvnw openapi-generator:generate -pl openapi
+
+jwebserver -p 8005 -d "$(pwd)/openapi/target/"
 ```

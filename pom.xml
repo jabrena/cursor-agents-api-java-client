@@ -9,8 +9,25 @@
     <version>0.1.0</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <maven-plugin-versions.version>2.19.0</maven-plugin-versions.version>
+    </properties>
+
     <modules>
         <module>openapi</module>
         <module>java-client</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${maven-plugin-versions.version}</version>
+                <configuration>
+                    <allowSnapshots>false</allowSnapshots>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
