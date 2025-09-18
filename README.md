@@ -47,7 +47,7 @@ curl -X 'POST' \
   'https://api.cursor.com/v0/agents' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer key_251cf3839cfd2d800722d3157ad0d4be195ee6997ae480e6c4f72e4e0d0daf3a' \
+  -H 'Authorization: Bearer <token>' \
   -d '{
   "prompt": {
     "text": "Create a Java Hello World program and verify the results compiling and executing"
