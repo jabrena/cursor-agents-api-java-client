@@ -40,7 +40,7 @@ The repository is divided in 3 parts:
 
 - https://jabrena.github.io/cursor-agents-api-java-client/
 
-### 3. Test an example in your terminal
+### 3. Test an example in your terminal
 
 ```bash
 curl -X 'POST' \
