@@ -56,7 +56,6 @@ window.onload = function() {
 
     onComplete: function() {
       console.log('Swagger UI loaded successfully');
-      console.log('Available operations:', Object.keys(window.ui.getSystem().specActions.spec.json.paths || {}));
     },
 
     onFailure: function(data) {
