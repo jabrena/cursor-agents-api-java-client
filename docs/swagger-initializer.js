@@ -32,8 +32,8 @@ window.onload = function() {
     requestInterceptor: (request) => {
       console.log('Swagger UI Request:', request);
       // Add API key if needed
-      if (!request.headers['X-API-Key']) {
-        request.headers['X-API-Key'] = 'your-api-key-here';
+      if (!request.headers['Authorization']) {
+        request.headers['Authorization'] = 'Bearer <token>';
       }
       return request;
     },
