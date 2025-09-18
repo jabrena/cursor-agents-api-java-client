@@ -37,6 +37,17 @@ paths:
             schema:
               $ref: '#/components/schemas/LaunchAgentRequest'
             examples:
+              java_hello_world_prompt:
+                summary: Java Hello World prompt
+                value:
+                  prompt:
+                    text: "Create a Java Hello World program and verify the results compiling and executing"
+                  source:
+                    repository: "https://github.com/jabrena/cursor-background-agent-api-java-hello-world"
+                    ref: "main"
+                  model: "claude-4-sonnet"
+                  target:
+                    autoCreatePr: true
               simple_prompt:
                 summary: Simple text prompt
                 value:
