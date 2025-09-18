@@ -22,7 +22,7 @@ Cursor provides the following REST endpoints:
 - https://docs.cursor.com/en/background-agent/api/list-models
 - https://docs.cursor.com/en/background-agent/api/list-repositories
 
-And this project unify this fragmented information in a OpenAPI Specification in order to generate a Java API Client from it. 
+And this project unify this fragmented information in a OpenAPI Specification in order to generate a Java API Client from it.
 The repository is divided in 3 parts:
 
 - [Open API Specification](./openapi/src/main/resources/openapi.yaml) to interact with `Cursor background APIs`.
@@ -36,7 +36,34 @@ The repository is divided in 3 parts:
 - Go to [Cursor Settings](https://cursor.com/settings) → API section
 - Copy your API key
 
-### 2. Test the example
+### 2. Get familiar with the REST API.
+
+- https://jabrena.github.io/cursor-agents-api-java-client/
+
+### 3. Test an example in your terminal
+
+```bash
+curl -X 'POST' \
+  'https://api.cursor.com/v0/agents' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -d '{
+  "prompt": {
+    "text": "Create a Java Hello World program and verify the results compiling and executing"
+  },
+  "source": {
+    "repository": "https://github.com/jabrena/cursor-background-agent-api-java-hello-world",
+    "ref": "main"
+  },
+  "model": "claude-4-sonnet",
+  "target": {
+    "autoCreatePr": true
+  }
+}'
+```
+
+### 3. Test an example with Java
 
 Review the example from this repository:
 
