@@ -285,7 +285,7 @@ paths:
                       code: "INTERNAL_ERROR"
                       message: "An unexpected error occurred"
 
-  /v0/agents/{agentId}/follow-up:
+  /v0/agents/{id}/followup:
     post:
       summary: Add Follow-up
       description: Add a follow-up message or instruction to an existing agent
@@ -295,7 +295,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: agentId
+        - name: id
           in: path
           required: true
           description: Unique identifier of the agent
@@ -892,6 +892,8 @@ components:
             - COMPLETED
             - FAILED
             - CANCELLED
+            - EXPIRED
+            - FINISHED
           example: "CREATING"
         source:
           $ref: '#/components/schemas/Source'

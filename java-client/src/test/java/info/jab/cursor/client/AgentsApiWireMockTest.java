@@ -161,7 +161,7 @@ class AgentsApiWireMockTest {
 
 
         @Test
-        @DisplayName("Should add follow-up successfully when valid request provided")
+        @DisplayName("Should add followup successfully when valid request provided")
         void should_addFollowUpSuccessfully_when_validRequestProvided() throws Exception {
             // Given
             String agentId = "bc_abc123";
@@ -169,7 +169,7 @@ class AgentsApiWireMockTest {
             FollowUpResponse mockResponse = new FollowUpResponse();
             mockResponse.setId(agentId);
 
-            stubFor(post(urlEqualTo("/v0/agents/" + agentId + "/follow-up"))
+            stubFor(post(urlEqualTo("/v0/agents/" + agentId + "/followup"))
                 .willReturn(aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
@@ -182,7 +182,7 @@ class AgentsApiWireMockTest {
             assertThat(response).isNotNull();
             assertThat(response.getId()).isEqualTo(agentId);
 
-            verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/follow-up")));
+            verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/followup")));
         }
 
         @Test
