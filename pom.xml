@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <maven-plugin-versions.version>2.19.0</maven-plugin-versions.version>
+        <maven-plugin-versions.version>2.19.1</maven-plugin-versions.version>
     </properties>
 
     <modules>
