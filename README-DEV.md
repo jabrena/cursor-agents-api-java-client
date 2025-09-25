@@ -30,8 +30,9 @@
 # Generate project reports
 ./mvnw site
 ./mvnw clean verify
+./mvnw clean verify -pl java-client -Pexamples
 ./mvnw clean verify -pl openapi
-./mvnw clean package -Ppromote
+./mvnw clean package -pl openapi -Ppromote
 
 jwebserver -p 8005 -d "$(pwd)/openapi/target/swagger-ui/"
 jwebserver -p 8005 -d "$(pwd)/docs"

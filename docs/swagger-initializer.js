@@ -2,7 +2,7 @@ window.onload = function() {
   //
 
   window.ui = SwaggerUIBundle({
-    url: './openapi.yaml',
+    url: './background-agents-openapi.yaml',
     dom_id: '#swagger-ui',
     deepLinking: true,
     presets: [
