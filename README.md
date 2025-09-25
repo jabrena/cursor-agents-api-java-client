@@ -55,28 +55,33 @@ Review the example from this repository:
 public class LaunchAgentExample {
 
     public static void main(String[] args) {
-        try {
-            // Get API key from command line argument or use example key
-            String apiKey = args.length > 0 ? args[0] : "EXAMPLE_API_KEY";
+        // Get API key from command line argument or use example key
+        String apiKey = args.length > 0 ? args[0] : "EXAMPLE_API_KEY";
 
-            var client = new CursorAgentManagementClient(apiKey);
+        var client = new CursorAgentManagementClient(apiKey);
 
-            var userPrompt = """
-                             Create a Java Hello World program
-                             and verify the results compiling and executing
-                             """;
-            var repository = "https://github.com/jabrena/cursor-background-agent-api-java-hello-world";
-            var defaultModel = "claude-4-sonnet";
+        var userPrompt = """
+                            Create a Java Hello World program
+                            and verify the results compiling and executing
+                            """;
+        var repository = "https://github.com/jabrena/cursor-background-agent-api-java-hello-world";
+        var defaultModel = "claude-4-sonnet";
 
-            var agent = client.launch(userPrompt, repository, repository);
+        var agentResult = client.launch(userPrompt, defaultModel, repository);
 
-            System.out.println("Agent created: " + agent.getId() + " (" + agent.getStatus() + ")");
-            System.out.println("Monitor at: " + agent.getTarget().getUrl());
-            System.exit(0);
-        } catch (Exception e) {
-            System.err.println("Error creating agent: " + e.getMessage());
-            System.exit(1);
-        }
+        // Use fold to handle both success and failure cases elegantly
+        String message = agentResult.fold(
+            agent -> "✅ Agent created successfully: " + agent.id() + " (" + agent.status() + ")",
+            error -> "❌ Failed to create agent: " + error.getMessage()
+        );
+        System.out.println(message);
+
+        // Exit with appropriate code based on result
+        int exitCode = agentResult.fold(
+            agent -> 0,  // Success
+            error -> 1   // Failure
+        );
+        System.exit(exitCode);
     }
 }
 ```
