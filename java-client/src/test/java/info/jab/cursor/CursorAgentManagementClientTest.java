@@ -1,7 +1,10 @@
-package info.jab.cursor.client;
+package info.jab.cursor;
 
 import info.jab.cursor.CursorAgentManagement;
 import info.jab.cursor.CursorAgentManagementClient;
+import info.jab.cursor.LaunchResponse;
+import info.jab.control.Result;
+import info.jab.cursor.client.ApiException;
 import info.jab.cursor.client.model.CreateAgent201Response;
 import info.jab.cursor.client.model.CreateAgent201ResponseSource;
 import info.jab.cursor.client.model.CreateAgent201ResponseTarget;
@@ -21,6 +24,7 @@ import java.time.OffsetDateTime;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for CursorAgentManagementClient using WireMock to stub Cursor API responses.
@@ -128,17 +132,15 @@ class CursorAgentManagementClientTest {
                         .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute the call
-        CreateAgent201Response response = client.launch(prompt, model, repository);
+        Result<LaunchResponse> result = client.launch(prompt, model, repository);
 
         // Verify response
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        LaunchResponse response = result.getOrNull();
         assertNotNull(response);
-        assertEquals("agent-123", response.getId());
-        assertEquals("Code Fix Agent", response.getName());
-        assertEquals(CreateAgent201Response.StatusEnum.CREATING, response.getStatus());
-        assertNotNull(response.getCreatedAt());
-        assertEquals(repository, response.getSource().getRepository().toString());
-        assertEquals("main", response.getSource().getRef());
-        assertTrue(response.getTarget().getAutoCreatePr());
+        assertEquals("agent-123", response.id());
+        assertEquals("CREATING", response.status());
 
         // Verify the request was made correctly
         verify(postRequestedFor(urlEqualTo("/v0/agents"))
@@ -169,13 +171,15 @@ class CursorAgentManagementClientTest {
                         .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute the call
-        CreateAgent201Response response = client.launch(prompt, model, repository);
+        Result<LaunchResponse> result = client.launch(prompt, model, repository);
 
         // Verify response
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        LaunchResponse response = result.getOrNull();
         assertNotNull(response);
-        assertEquals("agent-456", response.getId());
-        assertEquals("Refactor Agent", response.getName());
-        assertEquals(CreateAgent201Response.StatusEnum.CREATING, response.getStatus());
+        assertEquals("agent-456", response.id());
+        assertEquals("CREATING", response.status());
     }
 
     @Test
@@ -198,11 +202,14 @@ class CursorAgentManagementClientTest {
                         .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute the call
-        DeleteAgent200Response response = client.followUp(agentId, followUpPrompt);
+        Result<String> result = client.followUp(agentId, followUpPrompt);
 
         // Verify response
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        String response = result.getOrNull();
         assertNotNull(response);
-        assertEquals(agentId, response.getId());
+        assertEquals(agentId, response);
 
         // Verify the request was made correctly
         verify(postRequestedFor(urlEqualTo("/v0/agents/" + agentId + "/followup"))
@@ -228,11 +235,14 @@ class CursorAgentManagementClientTest {
                         .withBody(objectMapper.writeValueAsString(mockResponse))));
 
         // Execute the call
-        DeleteAgent200Response response = client.delete(agentId);
+        Result<String> result = client.delete(agentId);
 
         // Verify response
+        assertNotNull(result);
+        assertTrue(result.isSuccess());
+        String response = result.getOrNull();
         assertNotNull(response);
-        assertEquals(agentId, response.getId());
+        assertEquals(agentId, response);
 
         // Verify the request was made correctly
         verify(deleteRequestedFor(urlEqualTo("/v0/agents/" + agentId))
@@ -241,7 +251,7 @@ class CursorAgentManagementClientTest {
 
     @Test
     @DisplayName("launch should handle 400 bad request errors")
-    void testLaunchHandles400Error() {
+    void testLaunchHandles400Error() throws Exception {
         String prompt = "Invalid prompt";
         String model = "invalid-model";
         String repository = "not-a-url";
@@ -254,15 +264,23 @@ class CursorAgentManagementClientTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"error\": {\"message\": \"Invalid request parameters\"}}")));
 
-        // Execute the call and expect an exception
-        Exception exception = assertThrows(Exception.class, () -> client.launch(prompt, model, repository));
-        assertNotNull(exception);
-        assertTrue(exception.getMessage().contains("Failed to launch agent"));
+        // Execute the call and expect a failure result
+        Result<LaunchResponse> result = client.launch(prompt, model, repository);
+        assertNotNull(result);
+        assertThat(result.isFailure()).isTrue();
+        Throwable exception = result.exceptionOrNull();
+        assertThat(exception)
+            .isNotNull()
+            .isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception;
+        assertThat(apiException.getCode())
+            .describedAs("Expected HTTP 400 status code but was: %d", apiException.getCode())
+            .isEqualTo(400);
     }
 
     @Test
     @DisplayName("followUp should handle 404 agent not found")
-    void testFollowUpHandles404Error() {
+    void testFollowUpHandles404Error() throws Exception {
         String agentId = "non-existent-agent";
         String prompt = "Follow up prompt";
 
@@ -274,15 +292,23 @@ class CursorAgentManagementClientTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"error\": {\"message\": \"Agent not found\"}}")));
 
-        // Execute the call and expect an exception
-        Exception exception = assertThrows(Exception.class, () -> client.followUp(agentId, prompt));
-        assertNotNull(exception);
-        assertTrue(exception.getMessage().contains("Failed to add follow-up"));
+        // Execute the call and expect a failure result
+        Result<String> result = client.followUp(agentId, prompt);
+        assertNotNull(result);
+        assertThat(result.isFailure()).isTrue();
+        Throwable exception = result.exceptionOrNull();
+        assertThat(exception)
+            .isNotNull()
+            .isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception;
+        assertThat(apiException.getCode())
+            .describedAs("Expected HTTP 404 status code but was: %d", apiException.getCode())
+            .isEqualTo(404);
     }
 
     @Test
     @DisplayName("delete should handle 404 agent not found")
-    void testDeleteHandles404Error() {
+    void testDeleteHandles404Error() throws Exception {
         String agentId = "non-existent-agent";
 
         // Stub the API call to return 404
@@ -293,15 +319,23 @@ class CursorAgentManagementClientTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"error\": {\"message\": \"Agent not found\"}}")));
 
-        // Execute the call and expect an exception
-        Exception exception = assertThrows(Exception.class, () -> client.delete(agentId));
-        assertNotNull(exception);
-        assertTrue(exception.getMessage().contains("Failed to delete agent"));
+        // Execute the call and expect a failure result
+        Result<String> result = client.delete(agentId);
+        assertNotNull(result);
+        assertThat(result.isFailure()).isTrue();
+        Throwable exception = result.exceptionOrNull();
+        assertThat(exception)
+            .isNotNull()
+            .isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception;
+        assertThat(apiException.getCode())
+            .describedAs("Expected HTTP 404 status code but was: %d", apiException.getCode())
+            .isEqualTo(404);
     }
 
     @Test
     @DisplayName("launch should handle 401 unauthorized errors")
-    void testLaunchHandles401Error() {
+    void testLaunchHandles401Error() throws Exception {
         String prompt = "Test prompt";
         String model = "claude-3-5-sonnet-20241022";
         String repository = "https://github.com/user/repo";
@@ -314,9 +348,17 @@ class CursorAgentManagementClientTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"error\": {\"message\": \"Unauthorized\"}}")));
 
-        // Execute the call and expect an exception
-        Exception exception = assertThrows(Exception.class, () -> client.launch(prompt, model, repository));
-        assertNotNull(exception);
-        assertTrue(exception.getMessage().contains("Failed to launch agent"));
+        // Execute the call and expect a failure result
+        Result<LaunchResponse> result = client.launch(prompt, model, repository);
+        assertNotNull(result);
+        assertThat(result.isFailure()).isTrue();
+        Throwable exception = result.exceptionOrNull();
+        assertThat(exception)
+            .isNotNull()
+            .isInstanceOf(ApiException.class);
+        ApiException apiException = (ApiException) exception;
+        assertThat(apiException.getCode())
+            .describedAs("Expected HTTP 401 status code but was: %d", apiException.getCode())
+            .isEqualTo(401);
     }
 }

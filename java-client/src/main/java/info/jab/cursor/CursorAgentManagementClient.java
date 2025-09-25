@@ -14,6 +14,8 @@ import info.jab.cursor.client.model.DeleteAgent200Response;
 import java.util.HashMap;
 import java.util.Map;
 
+import info.jab.control.Result;
+
 /**
  * Client implementation for Cursor Agent Management operations.
  * This class provides access to agent management APIs including launching agents,
@@ -61,11 +63,10 @@ public class CursorAgentManagementClient implements CursorAgentManagement {
      * @param prompt The prompt/instructions for the agent to execute
      * @param model The LLM model to use (e.g., "claude-4-sonnet")
      * @param repository The repository URL where the agent should work
-     * @return CreateAgent201Response instance representing the launched agent
-     * @throws Exception if the agent launch fails
+     * @return Result containing LaunchResponse representing the launched agent
      */
     @Override
-    public CreateAgent201Response launch(String prompt, String model, String repository) throws Exception {
+    public Result<LaunchResponse> launch(String prompt, String model, String repository) {
         // Validate inputs
         if (prompt == null || prompt.trim().isEmpty()) {
             throw new IllegalArgumentException("Prompt cannot be null or empty");
@@ -102,11 +103,8 @@ public class CursorAgentManagementClient implements CursorAgentManagement {
         headers.put("Authorization", "Bearer " + apiKey);
 
         // Launch the agent
-        try {
-            return defaultApi.createAgent(request, headers);
-        } catch (Exception e) {
-            throw new Exception("Failed to launch agent: " + e.getMessage(), e);
-        }
+        return Result.runCatching(() -> defaultApi.createAgent(request, headers))
+                .map(response -> new LaunchResponse(response.getId(), response.getStatus().getValue()));
     }
 
     /**
@@ -114,11 +112,10 @@ public class CursorAgentManagementClient implements CursorAgentManagement {
      *
      * @param agentId The ID of the agent to add follow-up to
      * @param prompt The follow-up prompt/instructions
-     * @return DeleteAgent200Response containing the result of the follow-up
-     * @throws Exception if the follow-up fails
+     * @return Result containing DeleteAgent200Response with the result of the follow-up
      */
     @Override
-    public DeleteAgent200Response followUp(String agentId, String prompt) throws Exception {
+    public Result<String> followUp(String agentId, String prompt) {
         // Validate inputs
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("Agent ID cannot be null or empty");
@@ -140,22 +137,18 @@ public class CursorAgentManagementClient implements CursorAgentManagement {
         headers.put("Authorization", "Bearer " + apiKey);
 
         // Follow-up the agent
-        try {
-            return defaultApi.addFollowup(agentId, request, headers);
-        } catch (Exception e) {
-            throw new Exception("Failed to add follow-up: " + e.getMessage(), e);
-        }
+        return Result.runCatching(() -> defaultApi.addFollowup(agentId, request, headers))
+                    .map(response -> response.getId());
     }
 
     /**
      * Deletes a Cursor agent by its ID.
      *
      * @param agentId The ID of the agent to delete
-     * @return DeleteAgent200Response containing the result of the deletion
-     * @throws Exception if deletion fails
+     * @return Result containing DeleteAgent200Response with the result of the deletion
      */
     @Override
-    public DeleteAgent200Response delete(String agentId) throws Exception {
+    public Result<String> delete(String agentId) {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("Agent ID cannot be null or empty");
         }
@@ -164,11 +157,8 @@ public class CursorAgentManagementClient implements CursorAgentManagement {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + apiKey);
 
-        try {
-            return defaultApi.deleteAgent(agentId, headers);
-        } catch (Exception e) {
-            throw new Exception("Failed to delete agent: " + e.getMessage(), e);
-        }
+        return Result.runCatching(() -> defaultApi.deleteAgent(agentId, headers))
+                    .map(response -> response.getId());
     }
 
     /**

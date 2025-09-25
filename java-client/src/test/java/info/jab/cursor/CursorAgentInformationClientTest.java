@@ -1,4 +1,4 @@
-package info.jab.cursor.client;
+package info.jab.cursor;
 
 import info.jab.cursor.CursorAgentInformation;
 import info.jab.cursor.CursorAgentInformationClient;

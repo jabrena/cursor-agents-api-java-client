@@ -4,30 +4,14 @@ A repository to help Java developers to interact with Cursor Background Agents R
 
 Cursor provides the following REST endpoints:
 
-**Agent Management:**
+- https://cursor.com/en/docs/background-agent/api/endpoints
 
-- https://docs.cursor.com/en/background-agent/api/launch-an-agent
-- https://docs.cursor.com/en/background-agent/api/add-followup
-- https://docs.cursor.com/en/background-agent/api/delete-agent
+and provides an OpenAPI Specification: https://cursor.com/docs-static/background-agents-openapi.yaml
 
-**Agent Information:**
+This project offer the following value:
 
-- https://docs.cursor.com/en/background-agent/api/list-agents
-- https://docs.cursor.com/en/background-agent/api/agent-status
-- https://docs.cursor.com/en/background-agent/api/agent-conversation
-
-**General Endpoints:**
-
-- https://docs.cursor.com/en/background-agent/api/api-key-info
-- https://docs.cursor.com/en/background-agent/api/list-models
-- https://docs.cursor.com/en/background-agent/api/list-repositories
-
-And this project unify this fragmented information in a OpenAPI Specification in order to generate a Java API Client from it.
-The repository is divided in 3 parts:
-
-- [Open API Specification](./openapi/src/main/resources/openapi.yaml) to interact with `Cursor background APIs`.
 - [Swagger UI](https://jabrena.github.io/cursor-agents-api-java-client/) to understand better how to interact the different endpoints.
-- Java API generated from the OpenAPI Specification.
+- Java Client to interact with Cursor Background Agent REST API
 
 ## Quick Start
 
@@ -70,56 +54,27 @@ Review the example from this repository:
 ```java
 public class LaunchAgentExample {
 
-    private static final String DEFAULT_API_BASE_URL = "https://api.cursor.com";
-    private static final String PROMPT_TEXT = """
-                                              Create a Java Hello World program
-                                              and verify the results compiling and executing
-                                              """;
-    private static final String REPOSITORY_URL = "https://github.com/jabrena/cursor-background-agent-api-java-hello-world";
-    private static final String REPOSITORY_BRANCH = "main";
-    private static final String DEFAULT_MODEL = "claude-4-sonnet";
-
     public static void main(String[] args) {
         try {
             // Get API key from command line argument or use example key
             String apiKey = args.length > 0 ? args[0] : "EXAMPLE_API_KEY";
 
-            // Create and configure API client
-            ApiClient apiClient = new ApiClient();
-            apiClient.updateBaseUri(DEFAULT_API_BASE_URL);
-            AgentsApi agentsApi = new AgentsApi(apiClient);
+            var client = new CursorAgentManagementClient(apiKey);
 
-            // Create the prompt
-            Prompt prompt = new Prompt();
-            prompt.setText(PROMPT_TEXT);
+            var userPrompt = """
+                             Create a Java Hello World program
+                             and verify the results compiling and executing
+                             """;
+            var repository = "https://github.com/jabrena/cursor-background-agent-api-java-hello-world";
+            var defaultModel = "claude-4-sonnet";
 
-            // Create the source (repository and branch)
-            Source source = new Source();
-            source.setRepository(URI.create(REPOSITORY_URL));
-            source.setRef(REPOSITORY_BRANCH);
+            var agent = client.launch(userPrompt, repository, repository);
 
-            // Create the target configuration (optional)
-            TargetRequest target = new TargetRequest();
-            target.setAutoCreatePr(true);  // Automatically create PR when agent completes
-
-            // Create the launch request
-            LaunchAgentRequest request = new LaunchAgentRequest();
-            request.setPrompt(prompt);
-            request.setSource(source);
-            request.setModel(DEFAULT_MODEL);  // Specify the LLM model to use (optional)
-            request.setTarget(target);  // Set target configuration (optional)
-
-            // Launch the agent (with authentication headers)
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Bearer " + apiKey);
-            Agent agent = agentsApi.launchAgent(request, headers);
-
-            // Display the response
-            System.out.println("Agent launched: " + agent.getId() + " (" + agent.getStatus() + ")");
+            System.out.println("Agent created: " + agent.getId() + " (" + agent.getStatus() + ")");
             System.out.println("Monitor at: " + agent.getTarget().getUrl());
             System.exit(0);
         } catch (Exception e) {
-            System.err.println("Error launching agent: " + e.getMessage());
+            System.err.println("Error creating agent: " + e.getMessage());
             System.exit(1);
         }
     }
