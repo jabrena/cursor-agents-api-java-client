@@ -16,6 +16,7 @@
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <swagger-ui.version>5.28.1</swagger-ui.version>
         <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+        <download-maven-plugin.version>1.9.0</download-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -29,13 +30,38 @@
 
     <build>
         <plugins>
+            <!-- Download OpenAPI spec from Cursor -->
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>${download-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>download-cursor-openapi</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cursor.com/docs-static/background-agents-openapi.yaml</url>
+                            <outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
+                            <outputFileName>background-agents-openapi.yaml</outputFileName>
+                            <overwrite>true</overwrite>
+                            <skipCache>true</skipCache>
+                            <readTimeOut>30000</readTimeOut>
+                            <retries>3</retries>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Modern OpenAPI Generator Plugin -->
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <version>${openapi-generator-maven-plugin.version}</version>
                 <configuration>
-                    <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+                    <inputSpec>${project.basedir}/src/main/resources/background-agents-openapi.yaml</inputSpec>
                     <generatorName>dynamic-html</generatorName>
                     <output>${project.build.directory}/openapi-docs</output>
                     <configOptions>
@@ -47,7 +73,7 @@
                 <executions>
                     <execution>
                         <id>generate-openapi-docs</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -63,7 +89,7 @@
                 <executions>
                     <execution>
                         <id>unpack-swagger-ui</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
@@ -93,7 +119,7 @@
                     <!-- Copy Swagger UI files -->
                     <execution>
                         <id>copy-swagger-ui</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
@@ -109,7 +135,7 @@
                     <!-- Copy OpenAPI spec to Swagger UI directory -->
                     <execution>
                         <id>copy-openapi-spec</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
@@ -119,7 +145,7 @@
                                 <resource>
                                     <directory>${project.basedir}/src/main/resources</directory>
                                     <includes>
-                                        <include>openapi.yaml</include>
+                                        <include>background-agents-openapi.yaml</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -145,7 +171,7 @@
                                 <!-- Replace the default petstore URL with our OpenAPI spec -->
                                 <replacement>
                                     <token>https://petstore.swagger.io/v2/swagger.json</token>
-                                    <value>./openapi.yaml</value>
+                                    <value>./background-agents-openapi.yaml</value>
                                 </replacement>
                                 <!-- Configure Swagger UI with enhanced settings for examples -->
                                 <replacement>
@@ -211,7 +237,7 @@ window.onload = function() {
   //<![CDATA[
 
   window.ui = SwaggerUIBundle({
-    url: './openapi.yaml',
+    url: './background-agents-openapi.yaml',
     dom_id: '#swagger-ui',
     deepLinking: true,
     presets: [
@@ -282,4 +308,65 @@ window.onload = function() {
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>promote</id>
+            <build>
+                <plugins>
+                    <!-- Clean docs folder -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>clean-docs</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${project.basedir}/docs</directory>
+                                            <includes>
+                                                <include>**/*</include>
+                                            </includes>
+                                            <followSymlinks>false</followSymlinks>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Copy swagger-ui to docs -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>copy-swagger-ui-to-docs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.basedir}/docs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.basedir}/openapi/target/swagger-ui</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

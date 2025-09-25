@@ -32,23 +32,17 @@
         <!-- Maven plugin versions -->
         <maven-plugin-openapi-generator.version>7.15.0</maven-plugin-openapi-generator.version>
         <maven-plugin-compiler.version>3.14.1</maven-plugin-compiler.version>
-        <maven-plugin-dependency.version>3.8.1</maven-plugin-dependency.version>
         <maven-plugin-build-helper.version>3.6.1</maven-plugin-build-helper.version>
         <maven-plugin-surefire.version>3.5.4</maven-plugin-surefire.version>
         <maven-plugin-failsafe.version>3.5.4</maven-plugin-failsafe.version>
         <maven-plugin-enforcer.version>3.6.1</maven-plugin-enforcer.version>
+        <maven-plugin-exec.version>3.5.1</maven-plugin-exec.version>
         <extra-enforcer-rules.version>1.10.0</extra-enforcer-rules.version>
         <maven-plugin-versions.version>2.19.1</maven-plugin-versions.version>
     </properties>
 
     <!-- Dependencies -->
     <dependencies>
-        <!-- OpenAPI specification dependency -->
-        <dependency>
-            <groupId>info.jab.cursor-api</groupId>
-            <artifactId>openapi</artifactId>
-            <version>0.1.0</version>
-        </dependency>
 
         <!-- Jackson JSON processing dependencies -->
         <dependency>
@@ -159,27 +153,6 @@
                 </executions>
             </plugin>
 
-            <!-- Dependency management plugin - Extract OpenAPI spec from dependency -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-plugin-dependency.version}</version>
-                <executions>
-                    <execution>
-                        <id>unpack-openapi</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeArtifactIds>openapi</includeArtifactIds>
-                            <outputDirectory>${project.build.directory}/openapi-spec</outputDirectory>
-                            <includes>**/*.yaml</includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Code generation plugin - Generate Java client from OpenAPI spec -->
             <plugin>
                 <groupId>org.openapitools</groupId>
@@ -191,7 +164,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.build.directory}/openapi-spec/openapi.yaml</inputSpec>
+                            <inputSpec>https://cursor.com/docs-static/background-agents-openapi.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>native</library>
                             <output>${project.build.directory}/generated-sources</output>
@@ -297,29 +270,31 @@
                         </executions>
                     </plugin>
 
-                    <!-- Maven compiler plugin with examples configuration -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${maven-plugin-compiler.version}</version>
-                        <configuration>
-                            <release>${java.version}</release>
-                            <!-- Include examples in compilation -->
-                            <compilerArgs>
-                                <arg>-parameters</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </plugin>
-
                     <!-- Maven exec plugin for running examples -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.5.1</version>
+                        <version>${maven-plugin-exec.version}</version>
                         <configuration>
+                            <!-- Default example to run -->
                             <mainClass>info.jab.cursor.client.LaunchAgentExample</mainClass>
                             <commandlineArgs>${exec.args}</commandlineArgs>
+                            <!-- Add classpath from compile scope -->
+                            <includeProjectDependencies>true</includeProjectDependencies>
+                            <includePluginDependencies>false</includePluginDependencies>
                         </configuration>
+                        <executions>
+                            <!-- Predefined execution for LaunchAgentExample -->
+                            <execution>
+                                <id>launch-agent</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>info.jab.cursor.client.LaunchAgentExample</mainClass>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
